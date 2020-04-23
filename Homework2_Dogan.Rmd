@@ -1,0 +1,304 @@
+---
+title: "Homework 1 - Group G"
+author: "Azza Abdalghani - Claudia Dorigo - Dogan Can Demirbilek - Nicola Miolato"
+#output: html_notebook
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    theme: united
+    highlight: tango
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# LAB: **Laboratory**
+
+## Exercise 1
+- Check the biased nature of $s_b^{2}$ via MC simulation, generating $n=10$ iid values from a normal distribution. Plot also $s^2$ and comment the difference.
+
+```{r}
+set.seed(123)
+
+biased <- function(y){
+  sb <- (1/length(y)) * sum((y-mean(y))**2)
+  return(sb)
+}
+
+R <- 1000
+n <- 10
+sample_matrix <- matrix(data = 0, nrow = 1000, ncol = n+2)
+
+for (i in 1:nrow(sample_matrix)) {
+  sub_sample <- rnorm(n,0,1)
+  sample_matrix[i,] <- c(sub_sample,biased(sub_sample),var(sub_sample))
+}
+
+sigma <- 1
+par (mfrow=c(1,2), oma=c(0,0,0,0))
+hist(sample_matrix[,11], breaks= 40, probability = TRUE, 
+     xlab=expression(s_b^2), main= bquote(s_b^2), cex.main=1.5)
+curve(((n-1)/sigma^2) * dchisq(x * ((n-1)/sigma^2), df = n - 1),
+      add = TRUE, col="red", lwd=2, main="N(0,1)")
+
+hist(sample_matrix[,12], breaks= 40, probability = TRUE, 
+     xlab=expression(s^2), main= bquote(s^2), cex.main=1.5)
+curve(((n-1)/sigma^2) * dchisq(x * ((n-1)/sigma^2), df = n - 1),
+      add = TRUE, col="red", lwd=2, main="N(0,1)")
+
+mean(sample_matrix[,11])
+mean(sample_matrix[,12])  
+```
+
+It can be seen that biased estimation underestimate the population variance
+
+References (I want to take a look)
+
+https://blogs.uoregon.edu/rclub/2015/01/20/biased-and-unbiased-estimates/
+https://economictheoryblog.com/2012/06/28/latexlatexs2/
+ 
+ 
+## Exercise 2
+- What happens if a great player decides to join you, now? Try to simulate the data and perform the test again.
+
+```{r}
+M <- 6
+K <- 4
+n <- 50
+
+great_player <- sample( 1:K, n, replace=TRUE, prob =c( 2/16, 4/16, 5/16, 5/16))
+observed <- table(great_player)
+
+chisq.test( observed, p = c( 7/16, 5/16, 3/16, 1/16))
+
+# Since p-value is extremely different, we can say that this player does not follow the given probabilities
+# according to observations he is a great player
+
+obs <- matrix(data = 0, nrow = M, ncol = K)
+for(i in 1:M){
+  obs[i,] <- table(sample( 1:K, n, replace=TRUE, prob =c( 7/16, 5/16, 3/16, 1/16))) # almost same guys
+}
+
+# apply instead of for to have more efficient code
+
+chisq.test(obs, p = c( 7/16, 5/16, 3/16, 1/16))
+# According to test results observations follow the our assumed distribution
+
+# Let's add the great player to the list
+obs_wgreat <- rbind(obs, c(table(sample( 1:K, n, replace=TRUE, prob =c( 2/16, 4/16, 5/16, 5/16)))))
+chisq.test(obs_wgreat, p = c( 7/16, 5/16, 3/16, 1/16))
+
+# when we add the great player to the group, test results 
+# show that it does not follow the assumed dist.
+
+```
+
+
+
+
+## Exercise 3
+- Consider now some of the most followed Instagram accounts in 2018: for each of the owners, we report also the number of Twitter followers (in milions). Are the Instagram and Twitter account somehow associated? Perform a correlation test, compute the p-value and give an answer. Here is the dataframe.
+
+```{r}
+
+Owners <- c( "Katy Perry", "Justin Bieber", "Taylor Swift", "Cristiano Ronaldo",
+             "Kim Kardashian", "Ariana Grande", "Selena Gomez", "Demi Lovato")
+Instagram <- c( 69, 98,107, 123, 110, 118, 135, 67)
+Twitter <- c( 109, 106, 86, 72, 59, 57, 56, 56)
+plot( Instagram, Twitter, pch=21, bg=2, xlim=c(60, 150), ylim=c(40, 120) )
+text( Instagram[-6], Twitter[-6]+5, Owners[-6], cex=0.8 )
+text( Instagram[6], Twitter[6]-5, Owners[6], cex=0.8 )
+
+# H0 = corr = 0
+# corr != 0
+cor(Instagram, Twitter, method = c("pearson"))  #c("pearson", "kendall", "spearman"))
+cor.test(Instagram, Twitter, method=c("pearson"))
+
+# p value is 0.2957 so we can not reject the null hypot
+```
+
+
+
+
+
+## Exercise 4
+
+- Compute analitically $J(γ,γ;y),J(γ,β;y),J(β,β;y)$.
+
+$$
+$$
+
+
+
+## Exercise 5
+- Produce the contour plot for the quadratic approximation of the log-likelihood, based on the Taylor series:
+$$
+l(θ)−l(θ') ≈ -\frac{1}{2}(θ− θ' )^T J(θ')(θ−θ' ).
+$$
+
+
+# DAAG: **Data Analysis and Graphics Using R**
+
+## Chapter 3, Exercise 11.
+
+- The following data represent the total number of aberrant crypt foci (abnormal growths in the colon) observed in seven rats that had been administered a single dose of the carcinogen azoxymethane and sacrificed after six weeks (thanks to Ranjana Bird, Faculty of Human Ecology,
+University of Manitoba for the use of these data):
+```87 53 72 90 78 85 83```
+Enter these data and compute their sample mean and variance. Is the Poisson model appropriate for these data? To investigate how the sample variance and sample mean differ under the Poisson assumption, repeat the following simulation experiment several times:
+```x <- rpois(7, 78.3)```
+```mean(x); var(x)```
+
+```{r}
+data <- c(87,53,72,90,78,85,83)
+
+cat("Sample mean is:", mean(data), "and sample variance is:", var(data),"\n")
+
+# Applying monte carlo method
+
+R <- 1000
+n <- 7
+
+sample_matrix <- matrix(data = 0, nrow = 1000, ncol = n+2)
+
+for (i in 1:nrow(sample_matrix)) {
+  sub_sample <- rpois(n,78.3)
+  sample_matrix[i,] <- c(sub_sample,mean(sub_sample),var(sub_sample))
+}
+
+cat("Sample mean under poisson assumption is:", mean(sample_matrix[,8]), 
+    "and sample variance under poisson assumption is:", mean(sample_matrix[,9]))
+
+# Mean seems okay but variance is not so we should have some doubt about it.
+
+```
+
+## Chapter 3, Exercise 13.
+
+A Markov chain for the weather in a particular season of the year has the transition matrix, from one day to the next:
+
+|       |       |      |     | 
+|-------|-------|------|-----| 
+|       | Sun   |Cloud |Rain | 
+| Sun   | 0.6   | 0.2  | 0.2 | 
+| Cloud | 0.2   | 0.4  | 0.4 | 
+| Rain  | 0.4   | 0.3  | 0.3 | 
+
+It can be shown, using linear algebra, that in the long run this Markov chain will visit the states according to the stationary distribution:
+
+Sun 0.641 , Rain 0.208 and Cloud 0.151
+
+A result called the ergodic theorem allows us to estimate this distribution by simulating the Markov chain for a long enough time.
+
+(a)  Simulate 1000 values, and calculate the proportion of times the chain visits each of the states. Compare the proportions given by the simulation with the above theoretical proportions.
+
+```{r}
+Markov <- function (N=100, initial.value=1, P)
+{
+  X <- numeric(N)
+  X[1] <- initial.value + 1 # States 0:5; subscripts 1:6
+  n <- nrow(P)
+  for (i in 2:N){
+    X[i] <- sample(1:n, size=1, prob=P[X[i-1], ])}
+  X - 1
+}
+
+P <- matrix(c(c(0.6,0.2,0.2),c(0.2,0.4,0.4),c(0.4,0.3,0.3)),byrow = TRUE, nrow = 3)
+
+Markov(1000, 1, P)
+```
+
+(b)  Here is code that calculates rolling averages of the proportions over a number of simulations and plots the result. It uses the function rollmean() from the zoo package.
+
+```
+plotmarkov <- function(n=10000, start=0, window=100, transition=Pb, npanels=5){
+  xc2 <- Markov(n, start, transition)
+  mav0 <- rollmean(as.integer(xc2==0), window)
+  mav1 <- rollmean(as.integer(xc2==0), window)
+  npanel <- cut(1:length(mav0), breaks=seq(from=1, to=length(mav0),
+  length=npanels+1), include.lowest=TRUE)
+  df <- data.frame(av0=mav0, av1=mav1, x=1:length(mav0),
+  gp=npanel)
+  print(xyplot(av0+av1  ̃ x | gp, data=df, layout=c(1,npanels),
+  type="l", par.strip.text=list(cex=0.65),
+  scales=list(x=list(relation="free"))))
+}
+```
+Try varying the number of simulations and the width of the window. How wide a window is needed to get a good sense of the stationary distribution? This series settles down rather quickly to its stationary distribution (it “burns in” quite quickly). A reasonable width of window is, however, needed to give an accurate indication of the stationary distribution.
+
+## Chapter 4, Exercise 6.
+- Repeat this several times. There should be no consistent pattern in the acf plot for different random samples y1. There will be a fairly consistent pattern in the acf plot for y, a result of the correlation that is introduced by adding to each value the next value in the sequence.
+
+```{r}
+par (mfrow=c(1,2), oma=c(0,0,0,0))
+y1 <- rnorm(51)
+y1 # this is iid
+y <- y1[-1] + y1[-51]
+y # this is not iid
+acf(y1) # acf is `autocorrelation function' (see Ch. 9)
+acf(y)
+```
+
+## Chapter 4, Exercise 7.
+
+Create a function that does the calculations in the first two lines of the previous exercise. Put the calculation in a loop that repeats 25 times. Calculate the mean and variance for each vector y that is returned. Store the 25 means in the vector av, and store the 25 variances in the vector v. Calculate the variance of av.
+
+```{r}
+corfun <- function(n=51){
+  y1 <- rnorm(n)
+  y <- y1[-1]+y1[-n]
+  y
+}
+
+av <- numeric(25)
+v <- numeric(25)
+for(i in 1:25){
+  z <- corfun()
+  av[i] <- mean(z)
+  v[i] <- var(z)
+  }
+var(av)
+```
+
+
+  
+-----
+
+# CS: **Core Statistics**
+
+## Chapter 3, Exercise 3.3
+(hint: use ```system.time()``` function)
+
+- Rewrite the following, replacing the loop with efficient code:
+
+```{r}
+n <- 100000; z <- rnorm(n)
+zneg <- 0;j <- 1
+for (i in 1:n) {
+  if (z[i]<0) {
+    zneg[j] <- z[i]
+    j <- j + 1
+  }
+}
+```
+
+## Chapter 3, Exercise 3.5
+Consider solving the matrix equation $Ax = y$ for $x$, where $y$ is a known $n$ vector and $A$ is a known $n × n$ matrix. The formal solution to the problem is $x = A^{-1}y$ , but it is possible to solve the equation directly, without actually forming $A^{-1}$ . This question explores this direct solution. Read the help file for ```solve``` before trying it.
+
+(a) First create an $A, x$ and y satisfying $Ax = y$.
+```
+set.seed(0); n <- 1000
+A <- matrix(runif(n*n),n,n); x.true <- runif(n)
+y <- A%*%x.true
+```
+The idea is to experiment with solving $Ax = y$ for $x$, but with a known truth to compare the answer to.
+
+(b)  Using solve, form the matrix $A^{−1}$ explicitly and then form $x1 = A^{−1} y$. Note how long this takes. Also assess the mean absolute difference between $x1$ and ```x.true``` (the approximate mean absolute ‘error’ in the solution).
+
+(c)  Now use solve to directly solve for $x$ without forming $A^{−1}$ . Note how long this takes and assess the mean absolute error of the result.
+
+(d) What do you conclude?
+
+
+
