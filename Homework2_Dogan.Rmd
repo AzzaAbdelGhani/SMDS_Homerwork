@@ -1,5 +1,5 @@
 ---
-title: "Homework 1 - Group G"
+title: "Homework 2 - Group G"
 author: "Azza Abdalghani - Claudia Dorigo - Dogan Can Demirbilek - Nicola Miolato"
 #output: html_notebook
 output:
@@ -48,54 +48,48 @@ hist(sample_matrix[,12], breaks= 40, probability = TRUE,
 curve(((n-1)/sigma^2) * dchisq(x * ((n-1)/sigma^2), df = n - 1),
       add = TRUE, col="red", lwd=2, main="N(0,1)")
 
-mean(sample_matrix[,11])
-mean(sample_matrix[,12])  
+cat("Biased estimation for variance is: ",mean(sample_matrix[,11]), "unbiased estimation for variance is:",mean(sample_matrix[,12]))
+  
 ```
 
-It can be seen that biased estimation underestimate the population variance
+It can be seen that biased estimation underestimate the population variance. The deviation between the biased estimate and true population standard deviation is 0,10150,1015. Biased sample standard deviations are systematically smaller than the population standard deviation. Unbiased estimation underestimate the population standard deviation less than biased one. Indeed, deviation between unbiased estimation and true population standard deviation reduced to $0,0016$.
 
-References (I want to take a look)
 
-https://blogs.uoregon.edu/rclub/2015/01/20/biased-and-unbiased-estimates/
-https://economictheoryblog.com/2012/06/28/latexlatexs2/
- 
- 
 ## Exercise 2
 - What happens if a great player decides to join you, now? Try to simulate the data and perform the test again.
 
+First to understand if player is good or not, chi-squared test performed to see if player performs different than our expected performance. According to test results, new player performance different than expected.
+
 ```{r}
-M <- 6
-K <- 4
-n <- 50
+M <- 6 # number of friends
+K <- 4 # zones
+n <- 50 # number of shots
 
 great_player <- sample( 1:K, n, replace=TRUE, prob =c( 2/16, 4/16, 5/16, 5/16))
 observed <- table(great_player)
 
 chisq.test( observed, p = c( 7/16, 5/16, 3/16, 1/16))
-
-# Since p-value is extremely different, we can say that this player does not follow the given probabilities
-# according to observations he is a great player
-
+```
+After than other 5 guys' homogenity of performance of tested and test results showed that their performance really close to each other.
+```{r}
 obs <- matrix(data = 0, nrow = M, ncol = K)
 for(i in 1:M){
   obs[i,] <- table(sample( 1:K, n, replace=TRUE, prob =c( 7/16, 5/16, 3/16, 1/16))) # almost same guys
 }
 
-# apply instead of for to have more efficient code
-
 chisq.test(obs, p = c( 7/16, 5/16, 3/16, 1/16))
-# According to test results observations follow the our assumed distribution
+```
 
+Lastly, great player and those 5 guys played together, we just wanted to know if their performance are so different this time or not. According to test result, at least one of the player performed different than others.
+
+```{r}
 # Let's add the great player to the list
 obs_wgreat <- rbind(obs, c(table(sample( 1:K, n, replace=TRUE, prob =c( 2/16, 4/16, 5/16, 5/16)))))
 chisq.test(obs_wgreat, p = c( 7/16, 5/16, 3/16, 1/16))
 
 # when we add the great player to the group, test results 
 # show that it does not follow the assumed dist.
-
 ```
-
-
 
 
 ## Exercise 3
@@ -112,31 +106,98 @@ text( Instagram[-6], Twitter[-6]+5, Owners[-6], cex=0.8 )
 text( Instagram[6], Twitter[6]-5, Owners[6], cex=0.8 )
 
 # H0 = corr = 0
-# corr != 0
+# H1 = corr != 0
 cor(Instagram, Twitter, method = c("pearson"))  #c("pearson", "kendall", "spearman"))
 cor.test(Instagram, Twitter, method=c("pearson"))
 
-# p value is 0.2957 so we can not reject the null hypot
+
 ```
-
-
-
+According to test result we can reject the null hypothesis which says that $\rho=0$. Therefore test result indicate that there can be correlation between number of twitter and instagram followers.
 
 
 ## Exercise 4
 
 - Compute analitically $J(γ,γ;y),J(γ,β;y),J(β,β;y)$.
 
-$$
-$$
+This is the weibull distribution:
+$$l(\theta:y) = n\log\gamma - n\gamma\log\beta + \gamma\sum_{i=1}^n\log(y_i) - \sum_{i=1}^n(\frac{y_i}{\beta})^\gamma \\$$
+First calculating the first partial derivation of $\beta$ and $\gamma$ variables.
+
+$$\frac{\partial}{\partial\beta} l(\theta: y) = -\frac{n\gamma}{\beta} + \gamma\sum_{i=1}^n\frac{y_i^\gamma}{\beta^{\gamma+1}}  \\$$
+$$\frac{\partial}{\partial\gamma} l(\theta: y) = \frac{n}{\gamma} - n\log\beta + \sum_{i=1}^n\log y_i - \sum_{i=1}^n (\frac{y_i}{\beta})^\gamma\log(\frac{y_i}{\beta}) \\$$
+After that second derivations can be calculated.
+
+$$J(\beta, \beta :y) = -\frac{n\gamma}{\beta^2} + \gamma(\gamma + 1)\sum_{i=1}^n\frac{y_i^\gamma}{\beta^{\gamma+2}} \\$$
+
+$$J(\gamma, \gamma :y) = +\frac{n}{\gamma^2} + \sum_{i=1}^n (\frac{y_i}{\beta})^\gamma(\log^2(\frac{y_i}{\beta})) \\$$
+
+
+$$J(\gamma, \beta :y) = +\frac{n}{\beta} - \sum_{i=1}^n \frac{y_i^\gamma}{\beta^{\gamma+1}}(\gamma\log(\frac{y_i}{\beta}) + 1) \\$$
+
 
 
 
 ## Exercise 5
 - Produce the contour plot for the quadratic approximation of the log-likelihood, based on the Taylor series:
 $$
-l(θ)−l(θ') ≈ -\frac{1}{2}(θ− θ' )^T J(θ')(θ−θ' ).
+l(\theta) - l(\hat{\theta}) ≈ -\frac{1}{2}(\theta-\hat{\theta})^T J(\hat{\theta})(\theta-\hat{\theta}) 
 $$
+```{r}
+y <- c(155.9, 200.2, 143.8, 150.1,152.1, 142.2, 147, 146, 146,
+ 170.3, 148, 140, 118, 144, 97)
+
+n <- length(y)
+
+#define parameters grid
+gamma <- seq(0.1, 15, length=100)
+beta <- seq(100,200, length=100)
+
+parvalues <- expand.grid(gamma,beta)
+
+gammahat<-uniroot(function(x) n/x+sum(log(y))-n*
+sum(y^x*log(y))/sum(y^x),
+c(1e-5,15))$root
+betahat<- mean(y^gammahat)^(1/gammahat)
+weib.y.mle<-c(gammahat,betahat)
+
+#observed information matrix
+jhat<-matrix(NA,nrow=2,ncol=2)
+jhat[1,1]<-n/gammahat^2+sum((y/betahat)^gammahat*
+(log(y/betahat))^2)
+jhat[1,2]<-jhat[2,1]<- n/betahat-sum(y^gammahat/betahat^(gammahat+1)*
+(gammahat*log(y/betahat)+1))
+jhat[2,2]<- -n*gammahat/betahat^2+gammahat*(gammahat+1)/
+betahat^(gammahat+2)*sum(y^gammahat)
+
+approx <- function(theta){
+ return(-0.5*(theta - weib.y.mle) %*% jhat %*% (theta - weib.y.mle))
+}
+
+appx <- apply(parvalues, 1, approx)
+appx <- matrix(appx, nrow=length(gamma), ncol=length(beta),byrow=F)
+conf.levels <- c(0,0.5,0.75,0.9,0.95,0.99)
+
+par (mfrow=c(1,2), oma=c(0,0,0,0))
+#contour plot
+contour(gamma, beta, appx,
+levels=-qchisq(conf.levels, 2)/2,
+xlab=expression(gamma),
+labels=as.character(conf.levels),
+ylab=expression(beta))
+title('Weilbull relative log likelihood')
+
+#image
+image(gamma,beta,appx,zlim=c(-6,0),
+col=terrain.colors(20),xlab=expression(gamma),
+ylab=expression(beta))
+title('Weibull relative log likelihood')
+ 
+```
+
+
+
+
+
 
 
 # DAAG: **Data Analysis and Graphics Using R**
@@ -170,7 +231,7 @@ for (i in 1:nrow(sample_matrix)) {
 cat("Sample mean under poisson assumption is:", mean(sample_matrix[,8]), 
     "and sample variance under poisson assumption is:", mean(sample_matrix[,9]))
 
-# Mean seems okay but variance is not so we should have some doubt about it.
+# Mean seems okay but variance is not so we should have some doubt about it. Better to set significance level first like Claudia did.
 
 ```
 
@@ -178,16 +239,19 @@ cat("Sample mean under poisson assumption is:", mean(sample_matrix[,8]),
 
 A Markov chain for the weather in a particular season of the year has the transition matrix, from one day to the next:
 
-|       |       |      |     | 
-|-------|-------|------|-----| 
-|       | Sun   |Cloud |Rain | 
-| Sun   | 0.6   | 0.2  | 0.2 | 
-| Cloud | 0.2   | 0.4  | 0.4 | 
-| Rain  | 0.4   | 0.3  | 0.3 | 
+$$
+Pb = 
+\begin{bmatrix}
+        & Sun & Cloud & Rain \\
+  Sun   & 0.6 & 0.2   & 0.2  \\
+  Cloud & 0.2 & 0.4   & 0.4  \\
+  Rain  & 0.4 & 0.3   & 0.3  \\
+\end{bmatrix}
+$$
 
 It can be shown, using linear algebra, that in the long run this Markov chain will visit the states according to the stationary distribution:
 
-Sun 0.641 , Rain 0.208 and Cloud 0.151
+$$Sun=0.641 , Rain=0.208\space and \space Cloud=0.151$$
 
 A result called the ergodic theorem allows us to estimate this distribution by simulating the Markov chain for a long enough time.
 
@@ -206,12 +270,17 @@ Markov <- function (N=100, initial.value=1, P)
 
 P <- matrix(c(c(0.6,0.2,0.2),c(0.2,0.4,0.4),c(0.4,0.3,0.3)),byrow = TRUE, nrow = 3)
 
-Markov(1000, 1, P)
+result <- Markov(100000,1,P)
+table(result)/length(result)
+
+
 ```
 
 (b)  Here is code that calculates rolling averages of the proportions over a number of simulations and plots the result. It uses the function rollmean() from the zoo package.
 
-```
+```{r}
+library("zoo")
+library("lattice")
 plotmarkov <- function(n=10000, start=0, window=100, transition=Pb, npanels=5){
   xc2 <- Markov(n, start, transition)
   mav0 <- rollmean(as.integer(xc2==0), window)
@@ -220,10 +289,18 @@ plotmarkov <- function(n=10000, start=0, window=100, transition=Pb, npanels=5){
   length=npanels+1), include.lowest=TRUE)
   df <- data.frame(av0=mav0, av1=mav1, x=1:length(mav0),
   gp=npanel)
-  print(xyplot(av0+av1  ̃ x | gp, data=df, layout=c(1,npanels),
+  print(xyplot(av0+av1  ~ x | gp, data=df, layout=c(1,npanels),
   type="l", par.strip.text=list(cex=0.65),
   scales=list(x=list(relation="free"))))
 }
+# could not interpret this part, better code will be written
+for(sim in c(50000, 100000)){
+  for(win in c(100,1000)){
+    plotmarkov(n=sim, start=0, window=win, transition=P, npanels=5)
+  }
+}
+
+# Seems like when win is wider, stationary behaviour can be observed easier but not sure.
 ```
 Try varying the number of simulations and the width of the window. How wide a window is needed to get a good sense of the stationary distribution? This series settles down rather quickly to its stationary distribution (it “burns in” quite quickly). A reasonable width of window is, however, needed to give an accurate indication of the stationary distribution.
 
@@ -233,9 +310,7 @@ Try varying the number of simulations and the width of the window. How wide a wi
 ```{r}
 par (mfrow=c(1,2), oma=c(0,0,0,0))
 y1 <- rnorm(51)
-y1 # this is iid
 y <- y1[-1] + y1[-51]
-y # this is not iid
 acf(y1) # acf is `autocorrelation function' (see Ch. 9)
 acf(y)
 ```
@@ -273,6 +348,8 @@ var(av)
 - Rewrite the following, replacing the loop with efficient code:
 
 ```{r}
+
+start <- proc.time()
 n <- 100000; z <- rnorm(n)
 zneg <- 0;j <- 1
 for (i in 1:n) {
@@ -281,24 +358,77 @@ for (i in 1:n) {
     j <- j + 1
   }
 }
+end <- proc.time()
+
+print(end-start)
+
+start2 <- proc.time()
+n <- 100000; z <- rnorm(n)
+zneg_opt <- z[z < 0]
+
+end2 <- proc.time()
+print(end2-start2)
+
 ```
+Time difference between two function is $0,032$.
+
 
 ## Chapter 3, Exercise 3.5
 Consider solving the matrix equation $Ax = y$ for $x$, where $y$ is a known $n$ vector and $A$ is a known $n × n$ matrix. The formal solution to the problem is $x = A^{-1}y$ , but it is possible to solve the equation directly, without actually forming $A^{-1}$ . This question explores this direct solution. Read the help file for ```solve``` before trying it.
 
 (a) First create an $A, x$ and y satisfying $Ax = y$.
-```
+
+```{r}
 set.seed(0); n <- 1000
 A <- matrix(runif(n*n),n,n); x.true <- runif(n)
 y <- A%*%x.true
 ```
+
 The idea is to experiment with solving $Ax = y$ for $x$, but with a known truth to compare the answer to.
 
 (b)  Using solve, form the matrix $A^{−1}$ explicitly and then form $x1 = A^{−1} y$. Note how long this takes. Also assess the mean absolute difference between $x1$ and ```x.true``` (the approximate mean absolute ‘error’ in the solution).
 
+```{r}
+
+set.seed(0); n <- 1000
+A <- matrix(runif(n*n),n,n); x.true <- runif(n)
+y <- A%*%x.true
+start <-  proc.time()
+x1 <- solve(A) %*% y
+end <- proc.time()
+print(end-start)
+
+MAD <- function(x){
+  return(sum(abs(x-mean(x)))/length(x))
+}
+
+MAD(x.true)
+MAD(x1)
+
+```
+
 (c)  Now use solve to directly solve for $x$ without forming $A^{−1}$ . Note how long this takes and assess the mean absolute error of the result.
 
+```{r}
+set.seed(0); n <- 1000
+A <- matrix(runif(n*n),n,n); x.true <- runif(n)
+y <- A%*%x.true
+start <-  proc.time()
+x <- solve(A,y)
+end <- proc.time()
+print(end-start)
+
+MAD <- function(x){
+  return(sum(abs(x-mean(x)))/length(x))
+}
+
+MAD(x.true)
+MAD(x)
+```
+
 (d) What do you conclude?
+
+Build-in function solve is faster than other methods. MAD results are same for all calculations.
 
 
 
