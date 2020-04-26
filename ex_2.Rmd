@@ -148,7 +148,7 @@ The range of rollmeans hasn't changed so much, so I prefer to use n=1000 and win
 
 ***6***
 Here we generate random normal numbers with a sequential dependence structure:
-```{r}
+```{r,echo=TRUE,}
 y1 <- rnorm(51)
 y <- y1[-1] + y1[-51]
 acf(y1) # acf is ‘autocorrelation function’
@@ -414,6 +414,8 @@ Consider now some of the most followed Instagram accounts in 2018: for each of t
 ```
 I've just plotted the distribution, t_observed and boundaries of acceptance/rejection region
 ```{r}
+library(RColorBrewer)
+
 Instagram <- c( 69, 98,107, 123, 110, 118, 135, 67)
 Twitter <- c( 109, 106, 86, 72, 59, 57, 56, 56)
 
@@ -438,6 +440,14 @@ text (0,0.2, paste("Accept", expression(H_0)))
 text(-4,0.05,paste("Reject",expression(H_0)))
 text(4,0.05,paste("Reject",expression(H_0)))
 legend("topright", legend=c("T_observed", "acceptance region boundaries"),col=c("red","black"),lty=c(1,2),lwd=2, cex=0.8)
+
+
+alpha <- 0.05
+q_inf_95 <- qt(alpha/2, df=n-2)
+q_sup_95 <- qt(1-alpha/2, df=n-2)
+cord.x <- c(q_inf_95,seq(q_inf_95,q_sup_95,0.01),q_sup_95)
+cord.y <- c(0,dt(seq(q_inf_95,q_sup_95,0.01),n-2),0)
+polygon(cord.x,cord.y,col=rgb(1,0,0,1/10), border = NA )
 }
 
 ```
@@ -468,42 +478,45 @@ l(\theta)-l(\hat{\theta})≈-\frac{1}{2}(\theta-\hat{\theta})^TJ(\hat{\theta})(\
 $$
  ***Solution : ***
 ```{r}
+# log likelihood for a weibull distribution
 log_lik_weibull <- function( data, param){
   -sum(dweibull(data, shape = param[1], scale = param[2], log = TRUE))
 }
 
+# data
 y <- c(155.9, 200.2, 143.8, 150.1,152.1, 142.2, 147, 146, 146, 170.3, 148, 140, 118, 144, 97)
 n <- length(y)
 
+# find the ML estimates for gamma and beta
 gammahat<-uniroot(function(x) n/x+sum(log(y))-n*sum(y^x*log(y))/sum(y^x),
 c(1e-5,15))$root
 betahat<- mean(y^gammahat)^(1/gammahat)
 
 weib.y.mle<-c(gammahat,betahat)
-# ML estimates for beta and gamma
 weib.y.mle
  
-#observed information matrix
+# build the observed information matrix
 jhat<-matrix(NA,nrow=2,ncol=2)
-
 jhat[1,1]<-n/gammahat^2+sum((y/betahat)^gammahat*(log(y/betahat))^2)
-
 jhat[1,2]<-jhat[2,1]<-n/betahat-sum(y^gammahat/betahat^(gammahat+1)*(gammahat*log(y/betahat)+1))
-
 jhat[2,2]<- -n*gammahat/betahat^2+gammahat*(gammahat+1)/betahat^(gammahat+2)*sum(y^gammahat)
 
 #define parameters grid
 gamma <- seq(0.1, 15, length=100)
 beta <- seq(100,200, length=100)
 parvalues <- expand.grid(gamma,beta)
-conf.levels <- c(0,0.5,0.75,0.9,0.95,0.99)
 
+# define a function to compute the approximation
 approx <- function(x,theta_hat=weib.y.mle,J_hat=jhat){
  -(1/2)*(t(array(x-theta_hat)) %*% J_hat %*% array(x-theta_hat))
 }
 
+# compute the approximation parameters grid
 llik_approx <- apply(parvalues,1,approx)
 llik_approx <- matrix(llik_approx, nrow=length(gamma), ncol=length(beta))
+
+# plot the contour plot
+conf.levels <- c(0,0.5,0.75,0.9,0.95,0.99)
 
 contour(gamma, beta, llik_approx,
  levels=-qchisq(conf.levels, 2)/2,
