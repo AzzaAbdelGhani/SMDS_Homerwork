@@ -425,7 +425,7 @@ t_obs=r*sqrt((n-2)/(1-r^2))
 x <- seq(-5,5,length=1000)
 {
 plot(x,dt(x,n-2),type="l",xlab="T",ylab="density",main="t - test")
-abline(v=t_obs,col=2)
+abline(v=t_obs,col=2,lwd=3)
 
 
 #I fix alpha=0.05 and plot rejection and acceptance region
@@ -434,6 +434,9 @@ r1 <- qt(alpha/2,n-2)
 r2 <- qt(1-alpha/2,n-2)
 abline(v=r1,lty=2,lwd=2)
 abline(v=r2,lty=2,lwd=2)
+text (0,0.2, paste("Accept", expression(H_0)))
+text(-4,0.05,paste("Reject",expression(H_0)))
+text(4,0.05,paste("Reject",expression(H_0)))
 legend("topright", legend=c("T_observed", "acceptance region boundaries"),col=c("red","black"),lty=c(1,2),lwd=2, cex=0.8)
 }
 
@@ -511,12 +514,3 @@ contour(gamma, beta, llik_approx,
  
 ```
  
-
-####
-
-curve(dt(x,8),xlim=c(-6,6), ylim=c(0,0.4),
-  main="", col = "blue", lwd = 2, xlab="y",  ylab=expression(t[8]),  yaxs="i")
-cord.x2 <- c(q_inf_99,seq(q_inf_99,q_sup_99,0.01),q_sup_99)
-cord.y2 <- c(0,dt(seq(q_inf_99,q_sup_99,0.01),8),0)
-polygon(cord.x2,cord.y2,col=plotclr[5], border = NA )
-curve(dt(x,8),xlim=c(-6,6),main=expression(t[8]), col = "blue", lwd = 2, add = TRUE, yaxs="i")
