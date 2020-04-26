@@ -104,13 +104,10 @@ Here we generate random normal numbers with a sequential dependence structure:
 y1 <- rnorm(51)
 y <- y1[-1] + y1[-51]
 acf(y1) # acf is ‘autocorrelation function’
-# (see Chapter 9)
 acf(y)
 ```
 
-Repeat this several times. There should be no consistent pattern in the acf plot for different
-random samples y1. There will be a fairly consistent pattern in the acf plot for y, a result of
-the correlation that is introduced by adding to each value the next value in the sequence.
+Repeat this several times. There should be no consistent pattern in the acf plot for different random samples y1. There will be a fairly consistent pattern in the acf plot for y, a result of the correlation that is introduced by adding to each value the next value in the sequence.
 
 ***Solution: ***
 ```{r}
@@ -118,18 +115,42 @@ par(mfrow=c(4,4))
 
 for (i in 1:8){
   y1 <- rnorm(51)
-y <- y1[-1] + y1[-51]
-acf(y1)
-acf(y)
+  y <- y1[-1] + y1[-51]
+  acf(y1)
+  acf(y)
 }
 ```
-As expected I can see that for Series y the autocorrelation function is not significantly different from 0 for any lag which is not 0 (the function is below the significance level represented by the dashed line), while of course the autocorrelation function when the lag is equal to 0 is 1 because it's the autocorrelation between each observation and itself. This tells us that a sample generated using $\textit{rnorm}$ function is composed by independent observations.
+As expected I can see that for Series y the autocorrelation function is not significantly different from 0 for any lag which is not 0 (the function is below the significance level represented by the dashed line), while of course the autocorrelation function when the lag is equal to 0 is 1 because it's the autocorrelation between each observation and itself. This tells us that observations in a sample generated using $\textit{rnorm}$ are not correlated.
 
-In the plots of the autocorrelation function for Series y1 instead we can see that in each simulation the values corresponding to a lag equal to 1 is always significantly different from 0 (and also when lag=0 for the same reason of the Series y). This is an expected result because of how I've built the Series y, indeed I've build each observation depending on itself and the previous one.
+In the plots of the autocorrelation function for Series y1 instead we can see that in each simulation the values corresponding to a lag equal to 1 is always significantly different from 0 (and also when lag=0 for the same reason of the Series y). This is an expected result because of how I've built the Series y, indeed I've build each observation depending on itself and the following one.
 
 ***7***
 Create a function that does the calculations in the first two lines of the previous exercise.
 Put the calculation in a loop that repeats 25 times. Calculate the mean and variance for each vector y that is returned. Store the 25 means in the vector av, and store the 25 variances in the vector v. Calculate the variance of av. 
+
+***Solution : ***
+```{r}
+# my_function builds a vector y as in the previous exercise
+my_function <- function(n=51,mu=0,sigma=1){
+  y1 <- rnorm(n,mu,sigma)
+  y <- y1[-1] + y1[-n]
+  return(y)
+}
+
+# perform 25 repetitions and store sample means and sample variances
+rep <- 25
+a <- array(0,25)
+av <- array(0,25)
+
+for (i in 1:rep){
+  t <- my_function()
+  a[i] <- var(t)
+  av[i] <- mean(t)
+}
+
+# compute the variance of the vector of sample means
+var(av)
+```
 
 **CORE STATISTICS chapter 3 (3.3, 3.5)**
 
@@ -245,7 +266,7 @@ Check the biased nature of s2b via MC simulation, generating n=10 iid values fro
 ***Solution***
 ```{r}
 rep <- 1000
-n <- 5
+n <- 10
 mu <- 5
 sigma <- 3
 
@@ -267,14 +288,15 @@ sigma**2
 mean(statistics[,2])
 sigma**2
 
-#plot s2 sb2 and true value
-p1 <- hist(statistics[,1],breaks=100)                    
-p2 <- hist(statistics[,2],breaks=100)                    
-plot(p2,main="biasness of S2 and Sb2")  
-plot(p1, col=rgb(1,0,0,1/4), add=T)  
+#plot s2 observed, sb2 observed and true value
+{
+hist(statistics[,2],breaks=20,col=rgb(1,0,0,1/6),main="Biasness of sb2",xlab="Variance")  
+hist(statistics[,1],breaks=20,add=TRUE,col=rgb(0,0,1,1/6))                    
 abline(v=sigma**2,lwd=3)  
 abline(v=mean(statistics[,1]),col=2,lty=2,lwd=3)
 abline(v=mean(statistics[,2]),lty=2,lwd=3)
+legend("topright", legend=c(paste("true variance: ",sigma**2), paste("Sb2: ",round(mean(statistics[,2]),3)),paste("S2",round(mean(statistics[,1]),3))),col=c("black", "black","red"), lty=c(1,2,2),lwd=2, cex=0.8)
+}
 
 ```
 
@@ -284,14 +306,16 @@ abline(v=mean(statistics[,2]),lty=2,lwd=3)
 What happens if a great player decides to join you, now? Try to simulate the data and perform the test again.
 
 ***Solution:***
-I suppose 6 people have prob1 and the great palyer has prob2.
-I perform the simulation and I compute the statistic
+
 ```{r}
+# LAB 2
+set.seed(101)
 n <- 50 #sample size
 K <- 4 #number of zones
 
 # 6 players + 1 great player
 prob1 <- c(7/16,5/16,3/16,1/16)
+#prob2 <- c(1/16, 3/16, 6/16, 6/16)
 prob2 <- c(5/16, 3/16, 6/16, 2/16)
 
 y <- array(0,c(7,n))
@@ -302,14 +326,20 @@ for (i in 1:6){
 y[7,] <- sample( 1:K, n, replace=TRUE, prob=prob2)
 
 
-observed <- apply(y,1,table)
+observed <-( apply(y,1,table))
 observed
-  expected <- c( n*(7/16), n*(5/16), n*(3/16), n*(1/16))
 
-x2 <- sum(apply(((observed-expected)^(2)/expected),1,sum))
+  expected <- c( n*(7/16), n*(5/16), n*(3/16), n*(1/16))
+expected
+
+x2 <- sum((observed-expected)^(2)/expected)
+x2
 pchisq(x2, df =(K-1)*(6), lower.tail =FALSE )
+
+chisq.test( observed, p = c( 7/16, 5/16, 3/16, 1/16) )
+#why it's different? I should get the same results computing the p-value or using chisq.test function
 ```
-I reject the null hypotesis (all players have the same probability) but I don't know how many (or which ones) players have different probabilities.
+I reject the null hypotesis (all players have the same probability).
 
 ***Exercise 3***
 Sometimes it could be useful to assess the degree of association, or correlation, between paired samples, using the Pearson, the Kendall’s τ or the Spearman’s ρ correlation coefficient. Regardless of the adopted cofficient, the null hypothesis for a given correlation coefficent ρ is:
@@ -345,17 +375,28 @@ r
 t_obs=r*sqrt((n-2)/(1-r^2))
 
 x <- seq(-5,5,length=1000)
-plot(x,dt(x,n-2),type="l")
+{
+plot(x,dt(x,n-2),type="l",xlab="T",ylab="density",main="t - test")
 abline(v=t_obs,col=2)
+
 
 #I fix alpha=0.05 and plot rejection and acceptance region
 alpha <- 0.05
-r1 <- qt(alpha/2,n-2)
+r1 <- qt(alpha/2,n-2,lwd=2)
 r2 <- qt(1-alpha/2,n-2)
-abline(v=r1,lty=2)
-abline(v=r2,lty=2)
-```
+abline(v=r1,lty=2,lwd=2)
+abline(v=r2,lty=2,lwd=2)
+legend("topright", legend=c("T_observed", "acceptance region boundaries"),col=c("red","black"),lty=c(1,2),lwd=2, cex=0.8)
+}
 
+```
+Looking at the plot I can see that I should accept the null hypotesis $H_0: \rho=0$. I can also compute the p-value using as alternative hypotesis the two sided one: $H1: \rho \ne0$
+```{r}
+#compute the p-value
+p=2*(1-pt(abs(t_obs),n-2))
+p
+```
+Also from the p-value I can see that I should accept the null hypotesis: the two variables are not correlated.
 
 ***Exercise 4***
 Compute analitically $J(\gamma,\gamma;y),J(\gamma,\beta;y),J(\beta,\beta;y)$.
