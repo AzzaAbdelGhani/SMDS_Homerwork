@@ -108,11 +108,10 @@ a.
 library(labstatR)
 library(lattice)
 library(zoo)
-
+n=1000000
 Pb <- rbind(c(0.6,0.2,0.2),c(0.2,0.4,0.4),c(0.4,0.3,0.3))
-a <- Markov("rain",10000,c("sun","cloud","rain"),Pb)
-sample <- a[["X"]]
-table(sample)/1000
+a <- Markov("rain",n,c("sun","cloud","rain"),Pb)
+table(a[["X"]])/n
 ```
 I don't get the same results. I also get quite different results starting from different states.
 
@@ -148,7 +147,7 @@ The range of rollmeans hasn't changed so much, so I prefer to use n=1000 and win
 
 ***6***
 Here we generate random normal numbers with a sequential dependence structure:
-```{r,echo=TRUE,}
+```{r,echo=TRUE,include=FALSE}
 y1 <- rnorm(51)
 y <- y1[-1] + y1[-51]
 acf(y1) # acf is ‘autocorrelation function’
@@ -239,6 +238,7 @@ time1 <- end-start
 
 # timing my optimized function
 start <- Sys.time()
+# in this way I'm copying in zneg2 only the negative values of z
 zneg2=z[z<0]
 end <- Sys.time()
 time2 <- end-start
@@ -252,7 +252,7 @@ summary(zneg)
 summary(zneg2)
 
 ```
-
+Removing the for loop I can see that the elapsed time decrease of one order of magnitude.
 
 **3.5**
  Consider solving the matrix equation $Ax = y$ for x, where y is a known $n-$
@@ -279,8 +279,9 @@ d. What do you conclude?
 
 ### Solution:
 b.
+
+First of all I compute the inverse of $A$ using $\textit{solve(A)}$ and then I compute $x_1$ as $A^{-1}y$. I've also timed the execution using $\textit{Sys.time()}$.
 ```{r}
-# here I compute the inverse of A using solve(A) and then I compute x1
 start <- Sys.time()
 A_inverse <- solve(A)
 x1 <- A_inverse%*%y
@@ -289,8 +290,9 @@ time1 <- end-start
 ```
 
 c.
+
+Now I can use the $solve()$ function to directly compute $x_1$ without inverting the matrix $A$. Also in this case I've timed the execution using $Sys.time()$.
 ```{r}
-# here I directly compute x1 using solve
 start <- Sys.time()
 x1 <- solve(A,y) 
 end <- Sys.time()
@@ -300,11 +302,13 @@ time2 <- end-start
 d.
 check which one is faster
 ```{r}
-# in previous code I've timed both versions
 time1
 time2 #faster
-```
 
+diff <- time1-time2
+print(paste("time difference: ",diff))
+```
+I can see that without invereting matrix $A$ the elapsed time has been reduced. 
 
 **LAB EXERCISES **
 
@@ -347,8 +351,7 @@ legend("topright", legend=c(paste("true variance: ",sigma**2), paste("Sb2 mean: 
 }
 
 ```
-
-
+Here I've plotted the sample distribution of Sb2 and S2. The black line indicates the true value of the variance. The blue dashed line is the mean of S2 while the red dashed line is the mean of Sb2. I can see that Sb2 is a biased estimator of the variance, indeed it underestimates the true variance $\sigma^2$.
 
 ***Exercise 2***
 What happens if a great player decides to join you, now? Try to simulate the data and perform the test again.
