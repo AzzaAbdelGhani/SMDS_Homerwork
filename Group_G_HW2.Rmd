@@ -162,23 +162,27 @@ Since what has been seen before the test carried out on the first 6 players with
 
 ### Exercise 3
 
-In order to test whether the number of followers on Twitter and Instagram of some accounts are linearly correlated a hypothesis test has been carried out, fixing $\alpha=0.05$ as significance level.
-Also To perform this test the Pearson correlation coefficient has been used.
-The $H_0$ null hypothesis assumes $\rho=0$.
+Consider now some of the most followed Instagram accounts in 2018: for each of the owners, we report also the number of Twitter followers (in milions). Are the Instagram and Twitter account somehow associated? Perform a correlation test, compute the p-value and give an answer. Here is the dataframe: 
+
+```{r basic 6, echo = TRUE }
+Owners <- c( "Katy Perry", "Justin Bieber", "Taylor Swift", "Cristiano Ronaldo",
+                   "Kim Kardashian", "Ariana Grande", "Selena Gomez", "Demi Lovato")
+      Instagram <- c( 69, 98,107, 123, 110, 118, 135, 67)
+      Twitter <- c( 109, 106, 86, 72, 59, 57, 56, 56)
+      plot( Instagram, Twitter, pch=21, bg=2, xlim=c(60, 150), ylim=c(40, 120) )
+      text( Instagram[-6], Twitter[-6]+5, Owners[-6], cex=0.8 )
+      text( Instagram[6], Twitter[6]-5, Owners[6], cex=0.8 )
+```
+
+
 
 *Solution :*
 
-```{r basic 6, echo=TRUE, warning=FALSE}
+In order to test whether the number of followers on Twitter and Instagram of some accounts are linearly correlated a hypothesis test has been carried out, fixing $\alpha=0.05$ as significance level. Also To perform this test the Pearson correlation coefficient has been used.
+The $H_0$ null hypothesis assumes $\rho=0$.
 
-Owners <- c( "Katy Perry", "Justin Bieber", "Taylor Swift", "Cristiano Ronaldo",
-                   "Kim Kardashian", "Ariana Grande", "Selena Gomez", "Demi Lovato")
-Instagram <- c( 69, 98,107, 123, 110, 118, 135, 67)
-Twitter <- c( 109, 106, 86, 72, 59, 57, 56, 56)
-plot( Instagram, Twitter, pch=21, bg=2, xlim=c(60, 150), ylim=c(40, 120), cex.lab=1.2)
-title("Number of followers scatterplot", cex.main = 1.5)
-text( Instagram[-6], Twitter[-6]+5, Owners[-6], cex=1.2 )
-text( Instagram[6], Twitter[6]-5, Owners[6], cex=1.2 )
 
+```{r basic 7, echo=TRUE, warning=FALSE}
 
 n=length(Instagram)
 r=cor(Instagram,Twitter)
@@ -710,6 +714,7 @@ for (j in 1:25){
   v[j] <- var(y)
 }
 ```
+
 Now We can print the variance of the sample mean. From theoretical results I know that the variance of the sample mean is $\frac{\sigma}{n}$. We can check if this result holds using as estimate of $\sigma$ the mean of the collected sample variances (which is  an unbiased estimator). We can see that the theoretical result holds.
 ```{r basic 25, echo=TRUE}
 print(paste("variance of the sample mean: ",var(av)))
