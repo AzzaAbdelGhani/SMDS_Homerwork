@@ -24,37 +24,51 @@ x <- rpois(7, 78.3)
 mean(x); var(x)
 
 ***Solution: ***
-```{r}
+In order to check the poisson assumption on these data first of all I generate many a sample from a $Poisson(78.3)$ and then I compute the sample mean and the sample variance on all of them. 
+```{r basic 16, echo=TRUE}
 data <- c(87, 53, 72, 90, 78, 85, 83)
 
-
 rep <- 1000
-x <- array(0,c(rep,2))
 
-for (i in 1:rep){
-  xx <- rpois(7, 78.3)
-  x[i,1] <- mean(xx)
-  x[i,2] <- var(xx)
-}
+samples <- matrix(rpois(7*rep,78),ncol=7)
+means <- apply(samples,1,mean)
+varina
 
 # plot histograms of simulated sample mean and sample variance
 # plot also a red line for the observed values
 par(mfrow=c(1,2))
-hist(x[,1],breaks=20,main="sample mean of poisson")
+{
+hist(means,breaks=20,main="sample mean of poisson")
 abline(v=mean(data),col=2)
-hist(x[,2],breaks=20,main="sample variance of poisson")
+hist(variances,breaks=20,main="sample variance of poisson")
 abline(v=var(data),col=2)
-
-#prob of getting a sample variance bigger than the observed one
-sum(x[,2]>var(data))/rep
-
-# compute the p-value from the theoretical distribution
-# because I know the distribution of the variance:
-#(n-1)*s2/sigma^2 ~ chi(n-1) where sigma^2 is lambda for a poisson
-chi_obs <- var(data)*6/78.3
-1-pchisq(chi_obs,6)
-#small but I can't reject the hypotesis
+}
 ```
+ Having so few data it's not possible to look graphically at the sample distribution and compare it with the Poisson one, so we based our analysis only on the sample mean and the sample variance. Looking separatly at them I can perform two different tests knowing the theoretical distributions for the sample mean and the sample variance: for the first one the null hypotesis is that the sample mean is equal to 78.3:
+$$
+\begin{cases}
+H_0: \bar{y}=78.3\\H_1: \bar{y}\ne 78.3
+\end{cases}
+$$
+and for the second one the null hypotesis is that the sample variance is 78.3:
+$$
+\begin{cases}
+H_0:var(y)=78.3\\H_1:var(y)\ne 78.3
+\end{cases}
+$$
+So now I fix the significance level $\alpha=0.05$ and I compute the p-values:
+```{r}
+#var ~ (n-1)*s2/lambda ~ chi(n-1) 
+chi_obs <- var(data)*6/78.3
+a <- 1-pchisq(chi_obs,6)
+print(paste("p-value for the sample mean: ",a))
+
+# mean ~ N(lambda,lambda/n)
+a <- 2*pnorm(-abs(mean(data)-78.3),0,78.3/7)
+print(paste("p-value for the sample variance: ",a))
+```
+Both p-values are greater than 0.05 (the variance one is small but still bigger than 0.05) so I accept both null hypotesis. 
+
 
 
 ***13***
@@ -176,28 +190,33 @@ Create a function that does the calculations in the first two lines of the previ
 Put the calculation in a loop that repeats 25 times. Calculate the mean and variance for each vector y that is returned. Store the 25 means in the vector av, and store the 25 variances in the vector v. Calculate the variance of av. 
 
 ***Solution : ***
-```{r}
-# my_function builds a vector y as in the previous exercise
-my_function <- function(n=51,mu=0,sigma=1){
-  y1 <- rnorm(n,mu,sigma)
+I've written a function which generates n values of the series y
+```{r basic 21, echo=TRUE}
+set.seed(101)
+auto_cor <- function(n=51){
+  y1 <- rnorm(n=51) 
   y <- y1[-1] + y1[-n]
-  return(y)
+  y
 }
-
-# perform 25 repetitions and store sample means and sample variances
-rep <- 25
-a <- array(0,25)
-av <- array(0,25)
-
-for (i in 1:rep){
-  t <- my_function()
-  a[i] <- var(t)
-  av[i] <- mean(t)
-}
-
-# compute the variance of the vector of sample means
-var(av)
 ```
+Now I call this function 25 times and a I store in 2 arrays the sample mean and the sample variance of the generated serie:
+```{r}
+av <- numeric(25)
+v <- numeric(25)
+
+for (j in 1:25){
+  y <- auto_cor()
+  av[j] <- mean(y)
+  v[j] <- var(y)
+}
+```
+Now I can print the variance of the sample mean. From theoretical results I know that the variance of the sample mean is $\frac{\sigma}{n}$. I can check if this result holds using as estimate of $\sigma$ the mean of the collected sample variances (which is  an unbiased estimator). I can see that the theoretical result holds.
+```{r}
+print(paste("variance of the sample mean: ",var(av)))
+print(paste("sample variance / n: ", mean(v)/25))
+```
+
+
 
 **CORE STATISTICS chapter 3 (3.3, 3.5)**
 
