@@ -102,12 +102,13 @@ However the consideration made for the previous charts seems to be rejected sinc
 
 ### Exercise 2
 
+Suppose now that other five friends join you and the other guy, for a total of M=6 friends. Do all of your friends share the same probabilities, with the above probabilites to hit the four zones?
 What happens if a great player decides to join you, now? Try to simulate the data and perform the test again.
-Assuming he is a great player means that his shots along the game will hit the highest points with great probability and the lowest point with low probability.
+
 
 *Solution :*
 
-For the first simulation 7 seven players have been considered, 6 with the same probability distribution $p_1=7/16$, $p_2=5/16$, $p_3=3/16$, $p_4=1/16$ and the seventh, greater player, with distribution $p_1=1/16$, $p_2=3/16$, $p_3=5/16$, $p_4=7/16$.
+For the first simulation 7 players have been considered, 6 with the same probability distribution $p_1=7/16$, $p_2=5/16$, $p_3=3/16$, $p_4=1/16$ and the seventh, greater player, with distribution $p_1=1/16$, $p_2=3/16$, $p_3=5/16$, $p_4=7/16$.
 For the hypothesis tests a $\alpha=0.05$ significance level has been fixed.
 
 ```{r basic 2, echo=TRUE}
@@ -275,10 +276,11 @@ Second derivatives of log-likelihood function
 
 ### Exercise 5 
 
-The following quadratic formula of the log-likelihood, based on the Taylor series:
+Produce the contour plot for the quadratic approximation of the log-likelihood, based on the Taylor series:
+
 
 $$ l(\theta)-l(\hat{\theta}) \approx -\frac{1}{2}(\theta-\hat{\theta})^TJ(\hat{\theta})(\theta-\hat{\theta}) $$
-allows to approximate the log-likelihood. In order to evaluate this approximation the contour plots of the log-likelihood and its estimation have been produced. 
+
 
 *Solution :*
 
@@ -362,6 +364,7 @@ These two charts are very usefull, since by focusing on colours you can apprecia
 
 Rewrite the following, replacing the loop with efficient code:
 ```{r basic 11, echo=TRUE}
+set.seed(123)
 n <- 100000; z <- rnorm(n)
 zneg <- 0;j <- 1
 for (i in 1:n) {
@@ -377,7 +380,7 @@ Confirm that your rewrite is faster but gives the same result.
 *Solution :* 
 
 ```{r basic 12, echo=TRUE}
-set.seed(101)
+set.seed(123)
 n <- 100000
 z <- rnorm(n)
 zneg <- 0
@@ -422,7 +425,7 @@ a. First create an $A$, $\text{x}$ and $y$ satisfying $A\text{x} = y$.
 
 *Solution :*
 ```{r basic 13, echo=TRUE}
-set.seed(101); 
+set.seed(123); 
 n <- 1000
 A <- matrix(runif(n*n),n,n); 
 x.true <- runif(n)
@@ -480,12 +483,24 @@ Build-in function solve is faster than other methods. MAD results are same for a
 
 ### CH3.Exercise 11
 The following data represent the total number of aberrant crypt foci (abnormal growths in the colon) observed in seven rats that had been administered a single dose of the carcinogen azoxymethane and sacrificed after six weeks (thanks to RanjanaBird, Faculty of Human Ecology, University of Manitoba for the use of these data):
+
+
 87 53 72 90 78 85 83
+
+
 Enter these data and compute their sample mean and variance. Is the Poisson model appropriate for these data? To investigate how the sample variance and sample mean differ under the Poisson assumption, repeat the following simulation experiment several times:
+
+
+```{r basic 16.1, echo=TRUE}
+set.seed(123)
 x <- rpois(7, 78.3)
 mean(x); var(x)
 
+```
+
 *Solution :*
+
+
 In order to check the poisson assumption on these data first of all I generate many a sample from a $Poisson(78.3)$ and then I compute the sample mean and the sample variance on all of them.
 
 ```{r basic 16, echo=TRUE}
@@ -524,6 +539,7 @@ H_0:var(y)=78.3\\H_1:var(y)\ne 78.3
 $$
 So now we fix the significance level $\alpha=0.05$ and we compute the p-values:
 ```{r basic 17, echo=TRUE}
+set.seed(123)
 #var ~ (n-1)*s2/lambda ~ chi(n-1) 
 chi_obs <- var(data)*6/78.3
 a <- 1-pchisq(chi_obs,6)
@@ -546,8 +562,12 @@ $Pb = \begin{bmatrix} & Sun & Cloud & Rain \\ Sun & 0.6 & 0.2 & 0.2 \\ Cloud & 0
 
 It can be shown, using linear algebra, that in the long run this Markov chain will visit the states according to the stationary distribution:
 
+
  Sun  Cloud Rain
+ 
+ 
 0.641 0.208 0.151
+
 
 A result called the ergodic theorem allows us to estimate this distribution by simulating the Markov chain for a long enough time.
 
@@ -557,7 +577,7 @@ a. Simulate 1000 values, and calculate the proportion of times the chain visits 
 
 
 ```{r basic 18, echo=TRUE}
-set.seed(101);
+set.seed(123);
 Pb <- matrix(c(0.6, 0.2, 0.2, 
                      0.2, 0.4, 0.4,
                      0.4, 0.3, 0.3), nrow = 3, ncol = 3, byrow = TRUE)
@@ -574,7 +594,7 @@ Markov = function(R, init, Mat ){
 }
 
 results <- table(Markov(R= 1000, init = 0, Mat= Pb))
-
+# 0 : Sun, 1 : Cloud, 2 : Run 
 print(results/1000)
 
 
@@ -709,9 +729,9 @@ for (i in 1:8){
 
 ```
 
-As expected I can see that for Series y the autocorrelation function is not significantly different from 0 for any lag which is not 0 (the function is below the significance level represented by the dashed line), while of course the autocorrelation function when the lag is equal to 0 is 1 because it's the autocorrelation between each observation and itself. This tells us that observations in a sample generated using $\textit{rnorm}$ are not correlated.
+As expected We can see that for Series y the autocorrelation function is not significantly different from 0 for any lag which is not 0 (the function is below the significance level represented by the dashed line), while of course the autocorrelation function when the lag is equal to 0 is 1 because it's the autocorrelation between each observation and itself. This tells us that observations in a sample generated using $\textit{rnorm}$ are not correlated.
 
-In the plots of the autocorrelation function for Series y1 instead we can see that in each simulation the values corresponding to a lag equal to 1 is always significantly different from 0 (and also when lag=0 for the same reason of the Series y). This is an expected result because of how I've built the Series y, indeed I've build each observation depending on itself and the following one.
+In the plots of the autocorrelation function for Series y1 instead we can see that in each simulation the values corresponding to a lag equal to 1 is always significantly different from 0 (and also when lag=0 for the same reason of the Series y). This is an expected result because of how We've built the Series y, indeed We've build each observation depending on itself and the following one.
 
 ### CH4.Exercise 7
 Create a function that does the calculations in the first two lines of the previous exercise.
