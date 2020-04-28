@@ -80,8 +80,8 @@ sigma**2
 ```{r basic 1.3, echo=TRUE, fig.height = 10, fig.width = 10}
 hist(statistics[,2], breaks=20, col=rgb(1,0,0,1/6),
      main=expression(paste("Biasness of ",s[b]^2)), 
-     xlab="Variance", xlim= c(0, 40), ylim= c(0, 220), cex.main=1.5, cex.lab=1.2)
-hist(statistics[,1],breaks=20,add=TRUE,col=rgb(0,0,1,1/6), ylim= c(0, 220)) 
+     xlab="Variance", xlim= c(0, 40), cex.main=1.5, cex.lab=1.2,probability=TRUE)
+hist(statistics[,1],breaks=20,add=TRUE,col=rgb(0,0,1,1/6), probability=TRUE) 
 abline(v=sigma**2,lwd=3)  
 abline(v=mean(statistics[,1]),col=4,lty=2,lwd=3)
 abline(v=mean(statistics[,2]),col=2,lty=2,lwd=3)
