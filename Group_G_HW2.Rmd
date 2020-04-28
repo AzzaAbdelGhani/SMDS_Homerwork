@@ -93,9 +93,9 @@ col=rgb(0,0,1,1/6)), lty=c(1,6,6,2,2),lwd=c(2,2,2,14,14), cex=1.2)
 ```
 
 
-Here We've plotted the sample distribution of Sb2 and S2. The black line indicates the true value of the variance. The blue dashed line is the mean of $s^2$ while the red dashed line is the mean of $s_b^2$. We can see that $s_b^2$ is a biased estimator of the variance, indeed it underestimates the true variance $\sigma^2$.
+Here we've plotted the sample distribution of $s_b2^$ and $s^2$. The black line indicates the true value of the variance. The blue dashed line is the mean of $s^2$ while the red dashed line is the mean of $s_b^2$. We can see that $s_b^2$ is a biased estimator of the variance, indeed it underestimates the true variance $\sigma^2$.
 
-Here We've plotted the sample distribution of $s_b^2$ and $s^2$. The black line indicates the true value of the variance. The blue dashed line is the mean of $s^2$ while the red dashed line is the mean of $s_b^2$. I can see that $s_b^2$ is a biased estimator of the variance, indeed it underestimates the true variance $\sigma^2$.
+Here we've plotted the sample distribution of $s_b^2$ and $s^2$. The black line indicates the true value of the variance. The blue dashed line is the mean of $s^2$ while the red dashed line is the mean of $s_b^2$. I can see that $s_b^2$ is a biased estimator of the variance, indeed it underestimates the true variance $\sigma^2$.
 
 
 
@@ -635,7 +635,7 @@ library(lattice)
 plotmarkov <- function(n=10000, start=0, window=100, transition=Pb, npanels=5){
       xc2 <- Markov(n, start, transition)
       mav0 <- rollmean(as.integer(xc2==0), window)
-      mav1 <- rollmean(as.integer(xc2==0), window)
+      mav1 <- rollmean(as.integer(xc2==1), window)
       npanel <- cut(1:length(mav0), breaks=seq(from=1, to=length(mav0),
       length=npanels+1), include.lowest=TRUE)
       df <- data.frame(av0=mav0, av1=mav1, x=1:length(mav0),
