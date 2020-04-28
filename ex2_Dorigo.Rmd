@@ -32,7 +32,7 @@ rep <- 1000
 
 samples <- matrix(rpois(7*rep,78),ncol=7)
 means <- apply(samples,1,mean)
-varina
+variances <- apply(samples,1,var)
 
 # plot histograms of simulated sample mean and sample variance
 # plot also a red line for the observed values
