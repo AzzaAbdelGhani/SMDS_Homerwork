@@ -76,6 +76,7 @@ sigma**2
 mean(statistics[,2])
 sigma**2
 ```
+A preliminary check can be made by comparing the distributions of the two estimators. They seem very similar, even though looking more closely you can note that the biased estimator has a heavier tail than $s^2$ one, on the other hand the unbiased estimator has values more concentrated around its mode than $s_b^2$. Thus the variance of $s^2$ seems to be lower than the variance of $s_b^2$, hence $s_2$ seems to be more efficiente than $s_b^2$, but it is a slight evidence. It may just depend on the small sample size.
 
 ```{r basic 1.3, echo=TRUE, fig.height = 10, fig.width = 10}
 hist(statistics[,2], breaks=20, col=rgb(1,0,0,1/6),
@@ -93,11 +94,10 @@ col=rgb(0,0,1,1/6)), lty=c(1,6,6,2,2),lwd=c(2,2,2,14,14), cex=1.2)
 ```
 
 
-Here we've plotted the sample distribution of $s_b2^$ and $s^2$. The black line indicates the true value of the variance. The blue dashed line is the mean of $s^2$ while the red dashed line is the mean of $s_b^2$. We can see that $s_b^2$ is a biased estimator of the variance, indeed it underestimates the true variance $\sigma^2$.
 
-Here we've plotted the sample distribution of $s_b^2$ and $s^2$. The black line indicates the true value of the variance. The blue dashed line is the mean of $s^2$ while the red dashed line is the mean of $s_b^2$. I can see that $s_b^2$ is a biased estimator of the variance, indeed it underestimates the true variance $\sigma^2$.
-
-
+Here the sample distributions of $s_b^2$ and $s^2$ have been plotted together. The black line indicates the true value of the variance. The blue dashed line is the mean of $s^2$ while the red dashed line is the mean of $s_b^2$. 
+\newline The main problem of $s_b^2$ seems to be its biasedness, that is also theoretically proved, while the estimator $s^2$ is pretty close to the true value, as expected since it is unbiased.
+However the consideration made for the previous charts seems to be rejected since in this plot the variabilities of the two estimators are quite similar. Also the variances of the two estimators are asymptotically equal, but for a small sample size the unbiased $s^2$ estimator may be a bit more efficient. This last slight advantage of $s_b^2$ does not balance the advantage produced by using an unbiased estimator.
 
 
 ### Exercise 2
@@ -422,7 +422,7 @@ a. First create an $A$, $\text{x}$ and $y$ satisfying $A\text{x} = y$.
 
 *Solution :*
 ```{r basic 13, echo=TRUE}
-set.seed(0); 
+set.seed(101); 
 n <- 1000
 A <- matrix(runif(n*n),n,n); 
 x.true <- runif(n)
@@ -557,7 +557,7 @@ a. Simulate 1000 values, and calculate the proportion of times the chain visits 
 
 
 ```{r basic 18, echo=TRUE}
-set.seed(0);
+set.seed(101);
 Pb <- matrix(c(0.6, 0.2, 0.2, 
                      0.2, 0.4, 0.4,
                      0.4, 0.3, 0.3), nrow = 3, ncol = 3, byrow = TRUE)
@@ -580,30 +580,56 @@ print(results/1000)
 
 ```
 
-By simulating 1000 values we get above proportions. Observed proportions follow the same order as well as theoretical ones. However there are differences. Because of this difference we tried to calculate theoretical proportions belove and we get similar results as simulation proportions. There might be mistake given proportions.
 
-Assume that the stationary distribution $\pi$ is the vector such that $\pi = \pi Pb$.We can find our stationary distribution by solving the following linear system.
+By simulating 1000 values the above proportions were obtained. There are evident differences between the simulated proportions and the stationary distribution. Thus it is a good idea to check if the stationary distribution assumed is right.
 
+\newline The stationary distribution $\pi$ is the row vector such that $\pi = \pi Pb$.
 
-$$
-0.6 \pi_1 + 0.2 \pi_2 + 0.4\pi_3 = \pi_1 \\
-0.2\pi_1 + 0.4\pi_2 + 0.3\pi_3 = \pi_2 \\
-0.2\pi_1 + 0.4\pi_2 + 0.3\pi_3 = \pi_3
-$$
+\[
+\begin{matrix} \begin{pmatrix}  \pi_1 & \pi_2 & \pi_3 \end{pmatrix}\\[0.0ex] \\ \\\end{matrix}
+\begin{bmatrix} 
+0.6 & 0.2 & 0.2 \\
+0.2 & 0.4 & 0.4 \\
+0.4 & 0.3 & 0.3 
+\end{bmatrix}
+=
+\begin{pmatrix}\pi_1 \\ \pi_2 \\ \pi_3\end{pmatrix}^\intercal
+\]
 
-subject to $\pi_1+\pi_2+\pi_3=1$. Putting these all equations together and moving all variables to left hand side, we get following linear system.
-$$
--0.4 \pi_1 + 0.2 \pi_2 + 0.4\pi_3 = 0 \\
-0.2\pi_1 - 0.6\pi_2 + 0.3\pi_3 = 0 \\
-0.2\pi_1 + 0.4\pi_2 - 0.7\pi_3 = 0 \\
-\pi_1 + \pi_2 + \pi_3 = 1
-$$
-We get the theoretical stationary distribution by solving this linear system.
+Hypothesizing $\pi_1+\pi_2+\pi_3=1$ it can be found by solving the following linear system.
 
- Sun  Cloud Rain
-0.429 0.285 0.286 
+\begin{equation}
+  \begin{cases}
+      0.6 \pi_1 + 0.2 \pi_2 + 0.4\pi_3 = \pi_1 \\
+      0.2\pi_1 + 0.4\pi_2 + 0.3\pi_3 = \pi_2 \\
+      0.2\pi_1 + 0.4\pi_2 + 0.3\pi_3 = \pi_3 \\ 
+      \pi_1 + \pi_2 + \pi_3 = 1
+  \end{cases}
+\end{equation}
 
-We can get better approximations by increasing the simulation size.
+Moving all variables to left-hand side, the linear system become:
+
+\begin{equation}
+  \begin{cases}
+      -0.4 \pi_1 + 0.2 \pi_2 + 0.4\pi_3 = 0 \\
+      0.2\pi_1 - 0.6\pi_2 + 0.3\pi_3 = 0 \\
+      0.2\pi_1 + 0.4\pi_2 - 0.7\pi_3 = 0 \\ 
+      \pi_1 + \pi_2 + \pi_3 = 1
+  \end{cases}
+\end{equation}
+
+The obtained result is:
+\[
+\begin{pmatrix}\pi_1 \\ \pi_2 \\ \pi_3\end{pmatrix}
+=
+\begin{pmatrix}3/7 \\ 2/7 \\ 2/7\end{pmatrix}
+\neq
+\begin{pmatrix}0.641 \\ 0.208 \\ 0.151\end{pmatrix}
+\]
+
+Hence the initial intuition was correct.
+\newline Finally We can get better approximations of the stationary distribution by increasing the simulation iterations.
+
 
 ```{r basic 19, echo=TRUE}
 
@@ -660,6 +686,7 @@ Above plots showed us when windows is wider we get better sense of stationary di
 Here we generate random normal numbers with a sequential dependence structure:
 
 ```{r basic 21, echo=TRUE}
+set.seed(123)
 y1 <- rnorm(51)
 y <- y1[-1] + y1[-51]
 par (mfrow=c(1,2))
@@ -671,6 +698,7 @@ acf(y)
 Repeat this several times. There should be no consistent pattern in the acf plot for different random samples y1. There will be a fairly consistent pattern in the acf plot for y, a result of the correlation that is introduced by adding to each value the next value in the sequence.
  
 ```{r basic 22, echo=TRUE}
+set.seed(123)
 par(mfrow=c(2,2))
 
 for (i in 1:8){
