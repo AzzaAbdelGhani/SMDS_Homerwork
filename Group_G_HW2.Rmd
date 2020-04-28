@@ -92,11 +92,11 @@ expression(s[b]^2),expression(s^2)),col=c("black","red","blue",rgb(1,0,0,1/6),
 col=rgb(0,0,1,1/6)), lty=c(1,6,6,2,2),lwd=c(2,2,2,14,14), cex=1.2)
 ```
 
-<<<<<<< HEAD
+
 Here We've plotted the sample distribution of Sb2 and S2. The black line indicates the true value of the variance. The blue dashed line is the mean of $s^2$ while the red dashed line is the mean of $s_b^2$. We can see that $s_b^2$ is a biased estimator of the variance, indeed it underestimates the true variance $\sigma^2$.
-=======
+
 Here We've plotted the sample distribution of $s_b^2$ and $s^2$. The black line indicates the true value of the variance. The blue dashed line is the mean of $s^2$ while the red dashed line is the mean of $s_b^2$. I can see that $s_b^2$ is a biased estimator of the variance, indeed it underestimates the true variance $\sigma^2$.
->>>>>>> 8c69ad4cb9416fd202224061d589c32358bed51a
+
 
 
 
@@ -519,7 +519,7 @@ H_0:var(y)=78.3\\H_1:var(y)\ne 78.3
 \end{cases}
 $$
 So now we fix the significance level $\alpha=0.05$ and we compute the p-values:
-```{r basic 22, echo=TRUE}
+```{r basic 17, echo=TRUE}
 #var ~ (n-1)*s2/lambda ~ chi(n-1) 
 chi_obs <- var(data)*6/78.3
 a <- 1-pchisq(chi_obs,6)
@@ -552,7 +552,7 @@ a. Simulate 1000 values, and calculate the proportion of times the chain visits 
 *Solution :*
 
 
-```{r basic 17, echo=TRUE}
+```{r basic 18, echo=TRUE}
 set.seed(0);
 Pb <- matrix(c(0.6, 0.2, 0.2, 
                      0.2, 0.4, 0.4,
@@ -570,11 +570,9 @@ Markov = function(R, init, Mat ){
 }
 
 results <- table(Markov(R= 1000, init = 0, Mat= Pb))
-results
 
 print(results/1000)
 
-#0:Sun, 1:Cloud, 2:rain
 
 ```
 
@@ -603,7 +601,7 @@ We get the theoretical stationary distribution by solving this linear system.
 
 We can get better approximations by increasing the simulation size.
 
-```{r basic 18, echo=TRUE}
+```{r basic 19, echo=TRUE}
 
 options(digits=3)
 library(Matrix)
@@ -626,7 +624,7 @@ b. Here is code that calculates rolling averages of the proportions over a numbe
 Try varying the number of simulations and the width of the window. How wide a window is needed to get a good sense of the stationary distribution? This series settles down rather quickly to its stationary distribution (it “burns in” quite quickly). A reasonable width of window is, however, needed to give an accurate indication of the stationary distribution.
 
 
-```{r basic 19, echo=TRUE}
+```{r basic 20, echo=TRUE}
 library(zoo)
 library(lattice)
 
@@ -657,7 +655,7 @@ Above plots showed us when windows is wider we get better sense of stationary di
 ### CH4.Exercise 6
 Here we generate random normal numbers with a sequential dependence structure:
 
-```{r basic 20, echo=TRUE}
+```{r basic 21, echo=TRUE}
 y1 <- rnorm(51)
 y <- y1[-1] + y1[-51]
 par (mfrow=c(1,2))
@@ -668,7 +666,7 @@ acf(y)
 
 Repeat this several times. There should be no consistent pattern in the acf plot for different random samples y1. There will be a fairly consistent pattern in the acf plot for y, a result of the correlation that is introduced by adding to each value the next value in the sequence.
  
-```{r basic 21, echo=TRUE}
+```{r basic 22, echo=TRUE}
 par(mfrow=c(2,2))
 
 for (i in 1:8){
@@ -690,12 +688,9 @@ Put the calculation in a loop that repeats 25 times. Calculate the mean and vari
 
 *solution :*
 
-<<<<<<< HEAD
-```{r basic 22, echo=TRUE}
-=======
 We've written a function which generates n values of the series y
-```{r basic 21, echo=TRUE}
->>>>>>> 8c69ad4cb9416fd202224061d589c32358bed51a
+```{r basic 23, echo=TRUE}
+
 set.seed(101)
 auto_cor <- function(n=51){
   y1 <- rnorm(n=51) 
@@ -705,7 +700,7 @@ auto_cor <- function(n=51){
 ```
 Now We call this function 25 times and a We store in 2 arrays the sample mean and the sample variance of the generated serie:
 
-```{r basic 23, echo=TRUE}
+```{r basic 24, echo=TRUE}
 av <- numeric(25)
 v <- numeric(25)
 
@@ -716,7 +711,7 @@ for (j in 1:25){
 }
 ```
 Now We can print the variance of the sample mean. From theoretical results I know that the variance of the sample mean is $\frac{\sigma}{n}$. We can check if this result holds using as estimate of $\sigma$ the mean of the collected sample variances (which is  an unbiased estimator). We can see that the theoretical result holds.
-```{r basic 24, echo=TRUE}
+```{r basic 25, echo=TRUE}
 print(paste("variance of the sample mean: ",var(av)))
 print(paste("sample variance / n: ", mean(v)/25))
 ```
