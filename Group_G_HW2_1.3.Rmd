@@ -1,0 +1,765 @@
+---
+title: "Homework 2"
+author: "Group G: Abdalghani, Demirbilek, Dorigo, Miolato"
+date: "Spring 2020"
+output:
+  html_document:
+    toc: no
+header-includes:
+- \usepackage{color}
+- \definecolor{Purple}{HTML}{911146}
+- \definecolor{Orange}{HTML}{CF4A30}
+- \setbeamercolor{alerted text}{fg=Orange}
+- \setbeamercolor{frametitle}{bg=Purple}
+institute: University of Udine & University of Trieste
+graphics: yes
+fontsize: 10pt
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.align = 'center', warning=FALSE, message=FALSE, fig.asp=0.625, dev='png', global.par = TRUE, dev.args=list(pointsize=10), fig.path = 'figs/', fig.height = 10, fig.width = 10)
+```
+
+```{r setup, include=FALSE}
+library(MASS)
+library(knitr)
+local({
+  hook_plot = knit_hooks$get('plot')
+  knit_hooks$set(plot = function(x, options) {
+    paste0('\n\n----\n\n', hook_plot(x, options))
+  })
+})
+```
+
+# {.tabset}
+## Laboratory {.tabset} 
+### Exercise 1
+
+Check the biased nature of $s_b^2$ via MC simulation, generating $n=10$ iid values from a normal distribution. Plot also $s^2$ and comment the difference.
+
+*Solution :*
+
+
+```{r basic 1, echo=TRUE, fig.height = 10, fig.width = 10}
+set.seed(123)
+rep <- 1000
+n <- 10
+mu <- 5
+sigma <- 3
+
+samples <- array(0, c(rep,n))
+statistics <- array(0,c(rep,2))
+
+
+for (i in 1:rep){
+  samples[i,] <- rnorm(n,mu,sigma)
+  statistics[i,1] <- var(samples[i,])
+  statistics[i,2] <- statistics[i,1]*(n-1)/n 
+}
+
+par (mfrow=c(1,2), oma=c(0,0,0,0))
+hist(statistics[,2], breaks= 40, probability = TRUE, 
+xlab=expression(s[b]^2), main= bquote(s[b]^2), cex.main=1.5, cex.lab=1.2)
+curve(((n)/sigma^2) * dchisq(x * ((n)/sigma^2), df = n),
+add = TRUE, col="blue", lwd=2, main="N(0,1)")
+
+hist(statistics[ ,1], breaks= 40, probability = TRUE, 
+xlab=expression(s^2), main= bquote(s^2), cex.main=1.5, cex.lab=1.2)
+curve(((n-1)/sigma^2) * dchisq(x * ((n-1)/sigma^2), df = n - 1),
+add = TRUE, col="red", lwd=2, main="N(0,1)")
+
+#is s2 correct?
+mean(statistics[,1])
+sigma**2
+
+#is sb2 correct?
+mean(statistics[,2])
+sigma**2
+```
+
+A preliminary check can be made by comparing the distributions of the two estimators. They seem very similar, even though looking more closely you can note that the biased estimator has a heavier tail than $s^2$ one, on the other hand the unbiased estimator has values more concentrated around its mode than $s_b^2$. Thus the variance of $s^2$ seems to be lower than the variance of $s_b^2$, hence $s_2$ seems to be more efficiente than $s_b^2$, but it is a slight evidence. It may just depend on the small sample size.
+
+```{r basic 1.3, echo=TRUE, fig.height = 10, fig.width = 10}
+hist(statistics[,2], breaks=20, col=rgb(1,0,0,1/6),
+     main=expression(paste("Biasness of ",s[b]^2)), 
+     xlab="Variance", xlim= c(0, 40), cex.main=1.5, cex.lab=1.2,probability=TRUE)
+hist(statistics[,1],breaks=20,add=TRUE,col=rgb(0,0,1,1/6), probability=TRUE) 
+abline(v=sigma**2,lwd=3)  
+abline(v=mean(statistics[,1]),col=4,lty=2,lwd=3)
+abline(v=mean(statistics[,2]),col=2,lty=2,lwd=3)
+legend("topright", legend=c(paste("True variance = ",sigma**2), 
+bquote(paste(bar(s[b])^2, " = ", .(round(mean(statistics[,2]),3)))),
+bquote(paste(bar(s)^2, " = ",.(round(mean(statistics[,1]),3)))),
+expression(s[b]^2),expression(s^2)),col=c("black","red","blue",rgb(1,0,0,1/6),
+col=rgb(0,0,1,1/6)), lty=c(1,6,6,2,2),lwd=c(2,2,2,14,14), cex=1.2)
+```
+
+
+Here the sample distributions of $s_b^2$ and $s^2$ have been plotted together. The black line indicates the true value of the variance. The blue dashed line is the mean of $s^2$ while the red dashed line is the mean of $s_b^2$. 
+\newline The main problem of $s_b^2$ seems to be its biasedness, that is also theoretically proved, while the estimator $s^2$ is pretty close to the true value, as expected since it is unbiased.
+However the consideration made for the previous charts seems to be rejected since in this plot the variabilities of the two estimators are quite similar. Also the variances of the two estimators are asymptotically equal, but for a small sample size the unbiased $s^2$ estimator may be a bit more efficient. This last slight advantage of $s_b^2$ does not balance the advantage produced by using an unbiased estimator.
+
+### Exercise 2
+
+What happens if a great player decides to join you, now? Try to simulate the data and perform the test again.
+Assuming he is a great player means that his shots along the game will hit the highest points with great probability and the lowest point with low probability.
+
+*Solution :*
+
+For the first simulation 7 seven players have been considered, 6 with the same probability distribution $p_1=7/16$, $p_2=5/16$, $p_3=3/16$, $p_4=1/16$ and the seventh, greater player, with distribution $p_1=1/16$, $p_2=3/16$, $p_3=5/16$, $p_4=7/16$.
+For the hypothesis tests a $\alpha=0.05$ significance level has been fixed.
+
+```{r basic 2, echo=TRUE}
+set.seed(343)
+n <- 50
+K <- 4
+M <- 7
+
+y <- apply(matrix(rep(1:K, times=M-1), byrow=TRUE, nrow=6, ncol=K), 1, sample, size=n, 
+           replace=TRUE, prob =c( 7/16, 5/16, 3/16, 1/16))
+observed <- apply(y, 2, table)
+expected <- c( n*(7/16), n*(5/16), n*(3/16), n*(1/16))
+x2 <- sum((observed-expected)^(2)/expected)
+pchisq(x2, df =(K-1)*((M-1)-1), lower.tail =FALSE )
+
+```
+
+As expected, the homogeneity Pearson's chi-squared test statistic estimated on the players with same distribution, that is `r x2`, is not significant since the p-value (roughly 0.72) is higher than the significance level.
+
+```{r basic 3, echo=TRUE}
+y_gp <- sample( 1:K, n, replace=TRUE, prob =c( 1/16, 3/16, 5/16, 7/16))
+observed_gp <- table(y_gp)
+x2_gp <- sum((cbind(observed,observed_gp)-expected)^(2)/expected)
+pchisq(x2_gp, df =(K-1)*(M-1), lower.tail =FALSE )
+```
+
+Adding to the simulation the great player the test statistic estimated shows a strong evidence (p-value<<0.001) against the $H_0$ null hypothesis of homogeneity among the players, i.e. the great player is much more stronger than other players.
+\newline
+The second simulation instead of assuming the same distribution for all the initial sixth players, it is randomly uniformly sampled from the vector $(7/16, 5/16, 3/16, 1/16)$.
+
+```{r basic 4, echo=TRUE}
+y_2 <- apply(matrix(rep(1:K, times=M-1), byrow=TRUE, nrow=6, ncol=K), 1, sample, size=50, 
+            replace=TRUE, sample(c(7/16, 5/16, 3/16, 1/16), prob=rep(1/4,4)))
+observed_2 <- apply(y_2, 2, table)
+
+x2_2 <- sum((observed_2-expected)^(2)/expected)
+pchisq(x2_2, df =(K-1)*((M-1)-1), lower.tail =FALSE )
+```
+
+Also in this case the p-value is really small, so the homogeneity hypothesis has to be rejected.
+
+```{r basic 5, echo=TRUE}
+x2_gp_2 <- sum((cbind(observed_2,observed_gp)-expected)^(2)/expected)
+pchisq(x2_gp_2, df =(K-1)*(M-1), lower.tail =FALSE )
+```
+
+Since what has been seen before the test carried out on the first 6 players with the great one is expected not to change the previous conclusion. In deed the p-value is even smaller.
+
+
+
+
+
+### Exercise 3
+
+Consider now some of the most followed Instagram accounts in 2018: for each of the owners, we report also the number of Twitter followers (in milions). Are the Instagram and Twitter account somehow associated? Perform a correlation test, compute the p-value and give an answer. Here is the dataframe: 
+
+```{r basic 6, echo = TRUE }
+Owners <- c( "Katy Perry", "Justin Bieber", "Taylor Swift", "Cristiano Ronaldo",
+                   "Kim Kardashian", "Ariana Grande", "Selena Gomez", "Demi Lovato")
+      Instagram <- c( 69, 98,107, 123, 110, 118, 135, 67)
+      Twitter <- c( 109, 106, 86, 72, 59, 57, 56, 56)
+      plot( Instagram, Twitter, pch=21, bg=2, xlim=c(60, 150), ylim=c(40, 120) )
+      text( Instagram[-6], Twitter[-6]+5, Owners[-6], cex=0.8 )
+      text( Instagram[6], Twitter[6]-5, Owners[6], cex=0.8 )
+```
+
+
+
+*Solution :*
+
+In order to test whether the number of followers on Twitter and Instagram of some accounts are linearly correlated a hypothesis test has been carried out, fixing $\alpha=0.05$ as significance level. Also To perform this test the Pearson correlation coefficient has been used.
+The $H_0$ null hypothesis assumes $\rho=0$.
+
+
+```{r basic 7, echo=TRUE, warning=FALSE}
+
+n=length(Instagram)
+r=cor(Instagram,Twitter)
+t_obs=r*sqrt((n-2)/(1-r^2))
+
+x <- seq(-5,5,length=1000)
+plot(x,dt(x,n-2),type="l",xlab="t",ylab="Density",main="t - test", cex.main=1.5, cex.lab=1.2)
+abline(v=t_obs,col=2,lwd=3)
+
+alpha <- 0.05
+r1 <- qt(alpha/2,n-2)
+r2 <- qt(1-alpha/2,n-2)
+abline(v=r1,lty=2,lwd=2)
+abline(v=r2,lty=2,lwd=2)
+text (0,0.2, paste("Accept", expression(H0)))
+text(-4,0.05,paste("Reject",expression(H0)))
+text(4,0.05,paste("Reject",expression(H0)))
+legend("topright", legend=c("t observed", "Acceptance region boundaries"),col=c("red","black"),lty=c(1,2),lwd=2, cex=1.2)
+q_inf_95 <- qt(alpha/2, df=n-2)
+q_sup_95 <- qt(1-alpha/2, df=n-2)
+cord.x <- c(q_inf_95,seq(q_inf_95,q_sup_95,0.01),q_sup_95)
+cord.y <- c(0,dt(seq(q_inf_95,q_sup_95,0.01),n-2),0)
+polygon(cord.x,cord.y,col=rgb(1,0,0,1/10), border = NA )
+```
+
+Looking at the plot we can see that we should accept the null hypotesis $H_0: \rho=0$.
+
+```{r basic 8, echo=TRUE}
+2*(1-pt(abs(t_obs),n-2))
+```
+
+Since the p-value is higher than the significance level (0.05), $H_0$ is not rejected so the numbers of followers on Instagram of a person is not linearly correlated with his the number of followers on Twitter.
+
+You may try to perform a different test that just investigates the presence of some kind of association between the variables, i.e. you may try to compute the previous test statistic using the Spearman's rank correlation coefficient, that is a specific case of Pearson correlation coefficient using ranked variables instead of original variables, that also allows to be computed for ordinal qualitative variables.
+
+```{r basic 9, echo=TRUE}
+rho <- cor(Instagram, Twitter, method="spearman")
+t_s <- rho*((n-2)/(1-rho^2))^(1/2)
+2*(1-pt(abs(t_s), df=n-2))
+```
+
+Even in this case the p-value is higher than the significance level. This is an evidence against the assumption of association between the followers numbers of the two social networks.
+
+
+### Exercise 4
+
+Compute analitically $J(\gamma,\gamma;y)$, $J(\gamma,\beta;y)$, $J(\beta,\beta;y)$.
+
+\newline 
+*Solution :*
+
+Log-likelihood function
+$$ 
+l(\gamma, \beta; y) = nlog(\gamma)-n\log(\beta)+\gamma\sum_{i=1}^{n}{\log(y_i)}-\sum_{i=1}^{n}{\frac{y_i}{\beta}}
+$$
+
+First derivatives of log-likelihood function
+
+\begin{align*}
+\frac{\partial}{\partial\gamma}{l(\gamma,\beta;y)}&=\frac{n}{\gamma}-n\log(\beta)+\sum_{i=1}^{n}{\log(y_i)}-\sum_{i=1}^{n}{(y_i/\beta)^\gamma\log(y_i/\beta)} \\
+
+
+\frac{\partial}{\partial\beta}{l(\gamma,\beta;y)}&=-\frac{n\gamma}{\beta}+\frac{\gamma}{\beta^{\gamma+1}}\sum_{i=1}^{n}(y_i)^\gamma \\
+\end{align*}
+
+Second derivatives of log-likelihood function
+\begin{align*}
+\frac{\partial^2}{\partial^2\gamma}{l(\gamma,\beta;y)}=\frac{\partial}{\partial\gamma}\bigg(\frac{\partial}{\partial\gamma}{l(\gamma,\beta;y)}\bigg)&=\frac{\partial}{\partial\gamma}\bigg(\frac{n}{\gamma}-n\log(\beta)+\sum_{i=1}^{n}{\log(y_i)}-\sum_{i=1}^{n}\bigg(\frac{y_i}{\beta}\bigg)^\gamma\log\bigg(\frac{y_i}{\beta}\bigg)\bigg) \\
+&=-\frac{n}{\gamma^2}-\sum_{i=1}^{n}\log\bigg(\frac{y_i}{\beta}\bigg)\frac{\partial}{\partial\gamma}\bigg(\frac{y_i}{\beta}\bigg)^\gamma \\
+&=-\frac{n}{\gamma^2}-\sum_{i=1}^{n}\log\bigg(\frac{y_i}{\beta}\bigg)\frac{\partial}{\partial\gamma}\bigg(\exp\bigg(\gamma\log\bigg(\frac{y_i}{\beta}\bigg)\bigg)\bigg)\\
+&=-\frac{n}{\gamma^2}-\sum_{i=1}^{n}\log\bigg(\frac{y_i}{\beta}\bigg)\exp\bigg(\gamma\log\bigg(\frac{y_i}{\beta}\bigg)\bigg)\log\bigg(\frac{y_i}{\beta}\bigg) \\
+&=-\frac{n}{\gamma^2}-\sum_{i=1}^{n}\bigg(\frac{y_i}{\beta}\bigg)^{\gamma}\log^2\bigg(\frac{y_i}{\beta}\bigg) \\
+
+\\
+
+\frac{\partial^2}{\partial\gamma\partial\beta}{l(\gamma,\beta;y)}=\frac{\partial}{\partial\gamma}\bigg(\frac{\partial}{\partial\beta}{l(\gamma,\beta;y)}\bigg)&=\frac{\partial}{\partial\gamma}\bigg(-\frac{n\gamma}{\beta}+\frac{\gamma}{\beta^{\gamma+1}}\sum_{i=1}^{n}(y_i)^\gamma\bigg) \\
+&=\frac{\partial}{\partial\gamma}\bigg(-\frac{n\gamma}{\beta}+\frac{\gamma}{\beta}\sum_{i=1}^{n}\bigg(\frac{y_i}{\beta}\bigg)^\gamma\bigg) \\
+&=-\frac{n}{\beta}+\frac{1}{\beta}\sum_{i=1}^{n}\bigg(\frac{y_i}{\beta}\bigg)^\gamma+\frac{\gamma}{\beta}\sum_{i=1}^{n}{\frac{\partial}{\partial\gamma}\bigg(\exp\bigg(\gamma\log\bigg(\frac{y_i}{\beta}\bigg)\bigg)\bigg)} \\
+&=-\frac{n}{\beta}+\frac{1}{\beta}\sum_{i=1}^{n}\bigg(\frac{y_i}{\beta}\bigg)^\gamma+\frac{\gamma}{\beta}\sum_{i=1}^{n}{\bigg(\frac{y_i}{\beta}\bigg)^\gamma\log\bigg(\frac{y_i}{\beta}\bigg)} \\
+&=-\frac{n}{\beta}+\sum_{i=1}^{n}\bigg(\frac{y_i^{\gamma}}{\beta^{\gamma+1}}\bigg)\bigg(\gamma\log\bigg(\frac{y_i}{\beta}\bigg)+1\bigg) \\
+
+\\ 
+
+\frac{\partial^2}{\partial^2\beta}{l(\gamma,\beta;y)}=\frac{\partial}{\partial\beta}\bigg(\frac{\partial}{\partial\beta}{l(\gamma,\beta;y)}\bigg)&=\frac{\partial}{\partial\beta}\bigg(-\frac{n\gamma}{\beta}+\frac{\gamma}{\beta^{\gamma+1}}\sum_{i=1}^{n}(y_i)^\gamma\bigg) \\
+&=\frac{n\gamma}{\beta^2}-\frac{(\gamma+1)\gamma}{\beta^{\gamma+2}}\sum_{i=1}^{n}(y_i)^\gamma
+
+\end{align*}
+
+
+
+### Exercise 5 
+
+The following quadratic formula of the log-likelihood, based on the Taylor series:
+
+$$ l(\theta)-l(\hat{\theta}) \approx -\frac{1}{2}(\theta-\hat{\theta})^TJ(\hat{\theta})(\theta-\hat{\theta}) $$
+allows to approximate the log-likelihood. In order to evaluate this approximation the contour plots of the log-likelihood and its estimation have been produced. 
+
+*Solution :*
+
+
+```{r basic 10, echo=TRUE}
+y <- c(155.9, 200.2, 143.8, 150.1,152.1, 142.2, 147, 146, 146,
+       170.3, 148, 140, 118, 144, 97)
+n <- length(y)
+gamma <- seq(0.1, 15, length=100)
+beta <- seq(100,200, length=100)
+
+gammahat<-uniroot(function(x) n/x+sum(log(y))-n*
+                    sum(y^x*log(y))/sum(y^x),
+                  c(1e-5,15))$root
+betahat<- mean(y^gammahat)^(1/gammahat)
+
+
+jhat<-matrix(NA,nrow=2,ncol=2)
+jhat[1,1]<-n/gammahat^2+sum((y/betahat)^gammahat*
+                              (log(y/betahat))^2)
+jhat[1,2]<-jhat[2,1]<- n/betahat-sum(y^gammahat/betahat^(gammahat+1)*
+                                       (gammahat*log(y/betahat)+1))
+jhat[2,2]<- -n*gammahat/betahat^2+gammahat*(gammahat+1)/
+  betahat^(gammahat+2)*sum(y^gammahat)
+
+log_lik_est_weibull <- function(param){
+  -1/2*c(param[1]-gammahat, param[2]-betahat) %*% jhat %*% c(param[1]-gammahat, 
+                                                             param[2]-betahat)
+}
+
+parvalues <- expand.grid(gamma,beta)
+log_lik_est_weibull_values <- apply(parvalues, 1, log_lik_est_weibull)
+log_lik_est_weibull_values <- matrix(log_lik_est_weibull_values, nrow=length(gamma), 
+                                     ncol=length(beta), byrow=F)
+
+log_lik_weibull <- function( data, param){
+  -sum(dweibull(data, shape = param[1], scale = param[2], log = TRUE))}
+parvalue <- expand.grid(gamma,beta)
+llikvalues <- apply(parvalue, 1, log_lik_weibull, data=y)
+llikvalues <- matrix(-llikvalues, nrow=length(gamma), ncol=length(beta),
+byrow=F)
+
+conf.levels <- c(0,0.5,0.75,0.9,0.95,0.99)
+par(mfrow=c(1,2), oma=c(0,0,0,0))
+contour(gamma, beta, log_lik_est_weibull_values,
+        levels=-qchisq(conf.levels, 2)/2,
+        xlab=expression(gamma),
+        labels=as.character(conf.levels),
+        ylab=expression(beta), cex.lab=1.2)
+title('Approximated log-likelihood',cex.main=1.5)
+
+contour(gamma, beta, llikvalues-max(llikvalues),
+levels=-qchisq(conf.levels, 2)/2,
+xlab=expression(gamma),
+labels=as.character(conf.levels),
+ylab=expression(beta), cex.lab=1.2)
+title('Original log-likelihood', cex.main=1.5)
+```
+The two contour plots are quite similar, this similarity can be even more appreciated considering that the approximation just needed to compute and evaluate the observed matrix (so the second partial derivates) on the MLE estimators $\theta=(\gamma,\beta)$.
+\newline The contrast is mainly due to the difference between the original values and the approximated log-likelihood.
+
+```{r basic 10.5, echo=TRUE}
+par(mfrow=c(1,2), oma=c(0,0,0,0))
+
+image(gamma,beta,log_lik_est_weibull_values,zlim=c(-6,0),
+col=terrain.colors(20),xlab=expression(gamma),
+ylab=expression(beta), cex.lab=1.2)
+title('Approximated log-likelihood', cex.main=1.5)
+
+image(gamma,beta,llikvalues-max(llikvalues),zlim=c(-6,0),
+col=terrain.colors(20),xlab=expression(gamma),
+ylab=expression(beta), cex.lab=1.2)
+title('Original log-likelihood', cex.main=1.5)
+```
+
+These two charts are very usefull, since by focusing on colours you can appreciate that the shapes of the two distributions are almost the same.
+
+## Core Statistics {.tabset}
+
+### Exercise 3.3
+
+Rewrite the following, replacing the loop with efficient code:
+```{r basic 11, echo=TRUE}
+n <- 100000; z <- rnorm(n)
+zneg <- 0;j <- 1
+for (i in 1:n) {
+  if (z[i]<0) {
+    zneg[j] <- z[i]
+    j <- j + 1
+  }
+}
+
+```
+Confirm that your rewrite is faster but gives the same result.
+
+*Solution :* 
+
+```{r basic 12, echo=TRUE}
+set.seed(101)
+n <- 100000
+z <- rnorm(n)
+zneg <- 0
+zneg2 <- 0
+j <- 1
+
+# timing the given function
+start <- Sys.time()
+for (i in 1:n) {
+  if (z[i]<0) {
+    zneg[j] <- z[i]
+    j <- j + 1
+  }
+}
+end <- Sys.time()
+time1 <- end-start
+
+# timing my optimized function
+start <- Sys.time()
+# in this way I'm copying in zneg2 only the negative values of z
+zneg2=z[z<0]
+end <- Sys.time()
+time2 <- end-start
+
+# check which one is faster
+print(paste("Naive function took : " , round(time1, 5)))
+print(paste("Modified function took : " , round(time2, 5))) #faster
+
+#chech if the results are the same:
+summary(zneg)
+summary(zneg2)
+
+```
+
+Removing the for loop we can see that the elapsed time decrease of one order of magnitude.
+
+### Exercise 3.5
+Consider solving the matrix equation $A\text{x} = y$ for $\text{x}$, where $y$ is a known $n$ vector and $A$ is a known $n\times n$ matrix. The formal solution to the problem is $\text{x} = A^{-1}y$, but it is possible to solve the equation directly, without actually forming $A^{-1}$. This question explores this direct solution. Read the help file for $solve$ before trying it.
+
+
+a. First create an $A$, $\text{x}$ and $y$ satisfying $A\text{x} = y$.
+
+*Solution :*
+```{r basic 13, echo=TRUE}
+set.seed(0); 
+n <- 1000
+A <- matrix(runif(n*n),n,n); 
+x.true <- runif(n)
+y <- A%*%x.true
+
+```
+The idea is to experiment with solving $A\text{x} = y$ for $\text{x}$, but with a known truth to compare the answer to.
+
+
+
+b. Using solve, form the matrix $A^{-1}$ explicitly and then form $\text{x}_1 = A^{-1}y$. Note how long this takes. Also assess the mean absolute difference between $x_1$ and $\text{x.true}$ (the approximate mean absolute error in the solution).
+
+*Solution :*
+
+```{r basic 14, echo=TRUE}
+start1 <- Sys.time()
+A_inv <- solve(A)
+x1 <- A_inv%*%y
+end1 <- Sys.time()
+
+naive_time = end1-start1
+naive_time
+
+mean_abs1 <- mean(abs(x1 - x.true))
+mean_abs1
+```
+
+c. Now use solve to directly solve for $\text{x}$ without forming $A^{-1}$. Note how long this takes and assess the mean absolute error of the result.
+
+*solution :*
+
+```{r basic 15, echo=TRUE}
+start2 <- Sys.time()
+x2 <- solve(A,y)
+end2 <- Sys.time()
+
+opt_time = end2-start2
+opt_time
+
+mean_abs2 <- mean(abs(x2 - x.true))
+mean_abs2
+
+```
+
+
+d. What do you conclude?
+
+
+*Solution :*
+
+Build-in function solve is faster than other methods. MAD results are same for all calculations.
+
+
+## Data Analysis and Graphics Using R {.tabset}
+
+### CH3.Exercise 11
+The following data represent the total number of aberrant crypt foci (abnormal growths in the colon) observed in seven rats that had been administered a single dose of the carcinogen azoxymethane and sacrificed after six weeks (thanks to RanjanaBird, Faculty of Human Ecology, University of Manitoba for the use of these data):
+\begin{pmatrix} 87 & 53 & 72 & 90 & 78 & 85 & 83 \\ \end{pmatrix}
+Enter these data and compute their sample mean and variance. Is the Poisson model appropriate for these data? To investigate how the sample variance and sample mean differ under the Poisson assumption, repeat the following simulation experiment several times:
+x <- rpois(7, 78.3)
+mean(x); var(x)
+
+*Solution :*
+In order to check the poisson assumption on these data first of all I generate many a sample from a $Poisson(78.3)$ and then I compute the sample mean and the sample variance on all of them.
+
+```{r basic 16, echo=TRUE}
+data <- c(87, 53, 72, 90, 78, 85, 83)
+
+rep <- 1000
+
+samples <- matrix(rpois(7*rep,78),ncol=7)
+means <- apply(samples,1,mean)
+variances <- apply(samples,1,var)
+
+# plot histograms of simulated sample mean and sample variance
+# plot also a red line for the observed values
+par(mfrow=c(1,2))
+{
+hist(means,breaks=20,main="sample mean of poisson")
+abline(v=mean(data),col=2)
+hist(variances,breaks=20,main="sample variance of poisson")
+abline(v=var(data),col=2)
+}
+
+```
+
+Having so few data it's not possible to look graphically at the sample distribution and compare it with the Poisson one, so we based our analysis only on the sample mean and the sample variance. Looking separatly at them I can perform two different tests knowing the theoretical distributions for the sample mean and the sample variance: for the first one the null hypotesis is that the sample mean is equal to 78.3:
+
+$$
+\begin{cases}
+H_0: \bar{y}=78.3\\H_1: \bar{y}\ne 78.3
+\end{cases}
+$$
+and for the second one the null hypotesis is that the sample variance is 78.3:
+$$
+\begin{cases}
+H_0:var(y)=78.3\\H_1:var(y)\ne 78.3
+\end{cases}
+$$
+So now we fix the significance level $\alpha=0.05$ and we compute the p-values:
+```{r basic 17, echo=TRUE}
+#var ~ (n-1)*s2/lambda ~ chi(n-1) 
+chi_obs <- var(data)*6/78.3
+a <- 1-pchisq(chi_obs,6)
+print(paste("p-value for the sample mean: ",a))
+
+# mean ~ N(lambda,lambda/n)
+a <- 2*pnorm(-abs(mean(data)-78.3),0,78.3/7)
+print(paste("p-value for the sample variance: ",a))
+```
+Both p-values are greater than 0.05 (the variance one is small but still bigger than 0.05) so I accept both null hypotesis. 
+
+
+
+### CH3.Exercise 13
+
+A Markov chain for the weather in a particular season of the year has the following transition matrix, from one day to the next:
+
+\begin{equation} Pb = \begin{bmatrix} & Sun & Cloud & Rain \\ Sun & 0.6 & 0.2 & 0.2 \\ Cloud & 0.2 & 0.4 & 0.4 \\ Rain & 0.4 & 0.3 & 0.3 \end{bmatrix} \end{equation}
+
+It can be shown, using linear algebra, that in the long run this Markov chain will visit the states according to the stationary distribution:
+
+\begin{bmatrix} Sun & Cloud & Rain \\
+                0.641 & 0.208 & 0.151\\ \end{bmatrix}
+
+A result called the ergodic theorem allows us to estimate this distribution by simulating the Markov chain for a long enough time.
+
+a. Simulate 1000 values, and calculate the proportion of times the chain visits each of the states. Compare the proportions given by the simulation with the above theoretical proportions.
+
+*Solution :*
+
+
+```{r basic 18, echo=TRUE}
+set.seed(0);
+Pb <- matrix(c(0.6, 0.2, 0.2, 
+                     0.2, 0.4, 0.4,
+                     0.4, 0.3, 0.3), nrow = 3, ncol = 3, byrow = TRUE)
+
+Markov = function(R, init, Mat ){
+  chain = numeric(R)
+  chain[1] = init+1
+  
+  for(i in 2:R){
+    chain[i] = sample(x = 1:3, size =1, prob = Mat[chain[i-1], ])
+  }
+  chain - 1
+  
+}
+
+results <- table(Markov(R= 1000, init = 0, Mat= Pb))
+
+print(results/1000)
+
+
+```
+
+By simulating 1000 values the above proportions were obtained. There are evident differences between the simulated proportions and the stationary distribution. Thus it is a good idea to check if the stationary distribution assumed is right.
+
+\newline The stationary distribution $\pi$ is the row vector such that $\pi = \pi Pb$.
+
+\[
+\begin{matrix} \begin{pmatrix}  \pi_1 & \pi_2 & \pi_3 \end{pmatrix}\\[0.0ex] \\ \\\end{matrix}
+\begin{bmatrix} 
+0.6 & 0.2 & 0.2 \\
+0.2 & 0.4 & 0.4 \\
+0.4 & 0.3 & 0.3 
+\end{bmatrix}
+=
+\begin{pmatrix}\pi_1 \\ \pi_2 \\ \pi_3\end{pmatrix}^\intercal
+\]
+
+Hypothesizing $\pi_1+\pi_2+\pi_3=1$ it can be found by solving the following linear system.
+
+\begin{equation}
+  \begin{cases}
+      0.6 \pi_1 + 0.2 \pi_2 + 0.4\pi_3 = \pi_1 \\
+      0.2\pi_1 + 0.4\pi_2 + 0.3\pi_3 = \pi_2 \\
+      0.2\pi_1 + 0.4\pi_2 + 0.3\pi_3 = \pi_3 \\ 
+      \pi_1 + \pi_2 + \pi_3 = 1
+  \end{cases}
+\end{equation}
+
+Moving all variables to left-hand side, the linear system become:
+
+\begin{equation}
+  \begin{cases}
+      -0.4 \pi_1 + 0.2 \pi_2 + 0.4\pi_3 = 0 \\
+      0.2\pi_1 - 0.6\pi_2 + 0.3\pi_3 = 0 \\
+      0.2\pi_1 + 0.4\pi_2 - 0.7\pi_3 = 0 \\ 
+      \pi_1 + \pi_2 + \pi_3 = 1
+  \end{cases}
+\end{equation}
+
+The obtained result is:
+\[
+\begin{pmatrix}\pi_1 \\ \pi_2 \\ \pi_3\end{pmatrix}
+=
+\begin{pmatrix}3/7 \\ 2/7 \\ 2/7\end{pmatrix}
+\neq
+\begin{pmatrix}0.641 \\ 0.208 \\ 0.151\end{pmatrix}
+\]
+
+Hence the initial intuition was correct.
+\newline Finally We can get better approximations of the stationary distribution by increasing the simulation iterations.
+
+```{r basic 19, echo=TRUE}
+
+options(digits=3)
+library(Matrix)
+A        <- matrix(nrow = 4, ncol = 3, byrow = TRUE, data = c(c(-0.4, 0.2, 0.4, 0.2, -0.6, 0.3, 0.2, 0.4, -0.7, 1, 1, 1 )))
+b        <- c(0,0,0,1)
+rank.A   <- as.numeric(rankMatrix(A))
+rank.Ab  <- as.numeric(rankMatrix(cbind(A,b)))
+
+pi        <- drop(solve(t(A) %*% A, t(A) %*% b))
+names(pi) <- c('sun', 'cloud', 'rain')
+cat("Result of theoretical stationary distributions:\n", pi)
+
+results <- table(Markov(R= 100000, init = 0, Mat= Pb))
+cat("\nResult of increased simulation size:\n",results/100000)
+
+```
+As we can see simulation result and theoretical stationary distribution is very close.
+
+b. Here is code that calculates rolling averages of the proportions over a number of simulations and plots the result. It uses the function $rollmean()$ from the $zoo$ package.
+Try varying the number of simulations and the width of the window. How wide a window is needed to get a good sense of the stationary distribution? This series settles down rather quickly to its stationary distribution (it "burn in" quite quickly). A reasonable width of window is, however, needed to give an accurate indication of the stationary distribution.
+
+
+```{r basic 20, echo=TRUE}
+library(zoo)
+library(lattice)
+
+plotmarkov <- function(n=10000, start=0, window=100, transition=Pb, npanels=5){
+      xc2 <- Markov(n, start, transition)
+      mav0 <- rollmean(as.integer(xc2==0), window)
+      mav1 <- rollmean(as.integer(xc2==0), window)
+      npanel <- cut(1:length(mav0), breaks=seq(from=1, to=length(mav0),
+      length=npanels+1), include.lowest=TRUE)
+      df <- data.frame(av0=mav0, av1=mav1, x=1:length(mav0),
+      gp=npanel)
+      print(xyplot(av0+av1 ~ x | gp, data=df, layout=c(1,npanels),
+      type="l", par.strip.text=list(cex=0.65),
+      scales=list(x=list(relation="free"))))
+}
+
+plotmarkov(window = 100)
+plotmarkov(window = 1000)
+plotmarkov(window = 5000)
+plotmarkov(n=10000, window = 1000)
+plotmarkov(n=10000, window = 5000)
+```
+
+Above plots showed when window is wider a better estimation of stationary distribution is obtained. However even a reasonable value for width like 1000 help to observe burn-in period.
+
+
+
+### CH4.Exercise 6
+Here we generate random normal numbers with a sequential dependence structure:
+
+```{r basic 21, echo=TRUE}
+y1 <- rnorm(51)
+y <- y1[-1] + y1[-51]
+par (mfrow=c(1,2))
+acf(y1) # acf is ‘autocorrelation function
+acf(y)
+
+```
+
+Repeat this several times. There should be no consistent pattern in the acf plot for different random samples y1. There will be a fairly consistent pattern in the acf plot for y, a result of the correlation that is introduced by adding to each value the next value in the sequence.
+ 
+```{r basic 22, echo=TRUE}
+par(mfrow=c(2,2))
+
+for (i in 1:8){
+  y1 <- rnorm(51)
+  y <- y1[-1] + y1[-51]
+  acf(y1)
+  acf(y)}
+
+```
+
+As expected I can see that for Series y the autocorrelation function is not significantly different from 0 for any lag which is not 0 (the function is below the significance level represented by the dashed line), while of course the autocorrelation function when the lag is equal to 0 is 1 because it's the autocorrelation between each observation and itself. This tells us that observations in a sample generated using $\textit{rnorm}$ are not correlated.
+
+In the plots of the autocorrelation function for Series y1 instead we can see that in each simulation the values corresponding to a lag equal to 1 is always significantly different from 0 (and also when lag=0 for the same reason of the Series y). This is an expected result because of how I've built the Series y, indeed I've build each observation depending on itself and the following one.
+
+### CH4.Exercise 7
+Create a function that does the calculations in the first two lines of the previous exercise.
+Put the calculation in a loop that repeats 25 times. Calculate the mean and variance for each vector y that is returned. Store the 25 means in the vector av, and store the 25 variances in the vector v. Calculate the variance of av.
+
+
+*solution :*
+
+We've written a function which generates n values of the series y
+```{r basic 23, echo=TRUE}
+
+set.seed(101)
+auto_cor <- function(n=51){
+  y1 <- rnorm(n=51) 
+  y <- y1[-1] + y1[-n]
+  y
+}
+```
+Now We call this function 25 times and a We store in 2 arrays the sample mean and the sample variance of the generated serie:
+
+```{r basic 24, echo=TRUE}
+av <- numeric(25)
+v <- numeric(25)
+
+for (j in 1:25){
+  y <- auto_cor()
+  av[j] <- mean(y)
+  v[j] <- var(y)
+}
+```
+
+Now We can print the variance of the sample mean. From theoretical results I know that the variance of the sample mean is $\frac{\sigma}{n}$. We can check if this result holds using as estimate of $\sigma$ the mean of the collected sample variances (which is  an unbiased estimator). We can see that the theoretical result holds.
+```{r basic 25, echo=TRUE}
+print(paste("variance of the sample mean: ",var(av)))
+print(paste("sample variance / n: ", mean(v)/25))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
