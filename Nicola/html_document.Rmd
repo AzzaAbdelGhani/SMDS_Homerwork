@@ -2,12 +2,18 @@
 title: "Homework 2"
 author: "Group B"
 date: "23 aprile 2020"
+<<<<<<< HEAD
+output: 
+    html_notebook:
+      toc: true
+=======
 output:
   html_document:
     df_print: paged
     toc: yes
   html_notebook:
     toc: yes
+>>>>>>> 56eb3dd5b1ed8cccf2dc8f6ee3348e583b49d239
 ---
 
 ```{r include=FALSE}
@@ -200,4 +206,8 @@ ylab=expression(beta))
 title('Original log likelihood')
 ```
 
+<<<<<<< HEAD
 The two contour plots are quite similar, this similarity can be even more appreciated considering that the estimation just needed to compute and evaluate the observed matrix (so the second partial derivates) on the MLE estimators $\theta=(\gamma,\beta)$.
+=======
+The two contour plots are quite similar, this similarity can be even more appreciated considering that the estimation just needed to compute and evaluate the observed matrix (so the second partial derivates) on the MLE estimators $\theta=(\gamma,\beta)$.
+>>>>>>> 56eb3dd5b1ed8cccf2dc8f6ee3348e583b49d239

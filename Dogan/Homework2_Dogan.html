@@ -800,7 +800,7 @@ Pb =
 <a class="sourceLine" id="cb35-11" data-line-number="11"></a>
 <a class="sourceLine" id="cb35-12" data-line-number="12"><span class="kw">print</span>(end<span class="op">-</span>start)</a></code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0,035   0,000   0,035</code></pre>
+##   0,033   0,000   0,033</code></pre>
 <div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb37-1" data-line-number="1">start2 &lt;-<span class="st"> </span><span class="kw">proc.time</span>()</a>
 <a class="sourceLine" id="cb37-2" data-line-number="2">n &lt;-<span class="st"> </span><span class="dv">100000</span>; z &lt;-<span class="st"> </span><span class="kw">rnorm</span>(n)</a>
 <a class="sourceLine" id="cb37-3" data-line-number="3">zneg_opt &lt;-<span class="st"> </span>z[z <span class="op">&lt;</span><span class="st"> </span><span class="dv">0</span>]</a>
@@ -808,7 +808,7 @@ Pb =
 <a class="sourceLine" id="cb37-5" data-line-number="5">end2 &lt;-<span class="st"> </span><span class="kw">proc.time</span>()</a>
 <a class="sourceLine" id="cb37-6" data-line-number="6"><span class="kw">print</span>(end2<span class="op">-</span>start2)</a></code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0,013   0,000   0,013</code></pre>
+##   0,014   0,000   0,013</code></pre>
 <p>Time difference between two function is <span class="math inline">\(0,032\)</span>.</p>
 </div>
 <div id="chapter-3-exercise-3.5" class="section level2">
@@ -832,7 +832,7 @@ Pb =
 <a class="sourceLine" id="cb40-6" data-line-number="6">end &lt;-<span class="st"> </span><span class="kw">proc.time</span>()</a>
 <a class="sourceLine" id="cb40-7" data-line-number="7"><span class="kw">print</span>(end<span class="op">-</span>start)</a></code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0,548   0,214   0,098</code></pre>
+##   0,799   0,332   0,165</code></pre>
 <div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb42-1" data-line-number="1">MAD &lt;-<span class="st"> </span><span class="cf">function</span>(x){</a>
 <a class="sourceLine" id="cb42-2" data-line-number="2">  <span class="kw">return</span>(<span class="kw">sum</span>(<span class="kw">abs</span>(x<span class="op">-</span><span class="kw">mean</span>(x)))<span class="op">/</span><span class="kw">length</span>(x))</a>
 <a class="sourceLine" id="cb42-3" data-line-number="3">}</a>
@@ -852,7 +852,7 @@ Pb =
 <a class="sourceLine" id="cb46-6" data-line-number="6">end &lt;-<span class="st"> </span><span class="kw">proc.time</span>()</a>
 <a class="sourceLine" id="cb46-7" data-line-number="7"><span class="kw">print</span>(end<span class="op">-</span>start)</a></code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0,234   0,154   0,050</code></pre>
+##   0,361   0,277   0,095</code></pre>
 <div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb48-1" data-line-number="1">MAD &lt;-<span class="st"> </span><span class="cf">function</span>(x){</a>
 <a class="sourceLine" id="cb48-2" data-line-number="2">  <span class="kw">return</span>(<span class="kw">sum</span>(<span class="kw">abs</span>(x<span class="op">-</span><span class="kw">mean</span>(x)))<span class="op">/</span><span class="kw">length</span>(x))</a>
 <a class="sourceLine" id="cb48-3" data-line-number="3">}</a>
