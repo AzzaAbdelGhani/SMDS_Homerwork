@@ -1,10 +1,24 @@
 ---
-title: "Homework 2"
-author: "Group G: Abdalghani, Demirbilek, Dorigo, Miolato"
+title: "Homework 2, Group G"
+author: "Abdalghani, Demirbilek, Dorigo, Miolato"
 date: "Spring 2020"
 output:
   html_document:
-    toc: no
+    toc: yes
+  beamer_presentation:
+    highlight: tango
+  include: null
+  ioslides_presentation:
+    highlight: tango
+  pdf_document:
+    highlight: tango
+    keep_tex: yes
+    toc: yes
+  slide_level: 2
+  slidy_presentation:
+    fig.height: 3
+    fig.width: 4
+    highlight: tango
 header-includes:
 - \usepackage{color}
 - \definecolor{Purple}{HTML}{911146}
@@ -15,13 +29,11 @@ institute: University of Udine & University of Trieste
 graphics: yes
 fontsize: 10pt
 ---
-
 ```{r global_options, include=FALSE}
-knitr::opts_chunk$set(fig.align = 'center', warning=FALSE, message=FALSE, fig.asp=0.625, dev='png', global.par = TRUE, dev.args=list(pointsize=10), fig.path = 'figs/', fig.height = 10, fig.width = 10)
-```
-
-```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align = 'center', warning=FALSE, message=FALSE, fig.asp=0.625, dev='png', global.par = TRUE, dev.args=list(pointsize=10), fig.path = 'figs/')
 library(MASS)
+```
+```{r setup, include=FALSE}
 library(knitr)
 local({
   hook_plot = knit_hooks$get('plot')
@@ -31,16 +43,16 @@ local({
 })
 ```
 
-# {.tabset}
-## Laboratory {.tabset} 
+
+## Laboratory 2 
 ### Exercise 1
 
-Check the biased nature of $s_b^2$ via MC simulation, generating $n=10$ iid values from a normal distribution. Plot also $s^2$ and comment the difference.
+* Check the biased nature of $s_b^2$ via MC simulation, generating $n=10$ iid values from a normal distribution. Plot also $s^2$ and comment the difference.
 
-*Solution :*
+*solution :*
 
 
-```{r basic 1, echo=TRUE, fig.height = 10, fig.width = 10}
+```{r basic 1, echo=TRUE}
 set.seed(123)
 rep <- 1000
 n <- 10
@@ -59,12 +71,12 @@ for (i in 1:rep){
 
 par (mfrow=c(1,2), oma=c(0,0,0,0))
 hist(statistics[,2], breaks= 40, probability = TRUE, 
-xlab=expression(s[b]^2), main= bquote(s[b]^2), cex.main=1.5, cex.lab=1.2)
+xlab=expression(s_b^2), main= bquote(s_b^2), cex.main=1.5)
 curve(((n)/sigma^2) * dchisq(x * ((n)/sigma^2), df = n),
 add = TRUE, col="blue", lwd=2, main="N(0,1)")
 
 hist(statistics[ ,1], breaks= 40, probability = TRUE, 
-xlab=expression(s^2), main= bquote(s^2), cex.main=1.5, cex.lab=1.2)
+xlab=expression(s^2), main= bquote(s^2), cex.main=1.5)
 curve(((n-1)/sigma^2) * dchisq(x * ((n-1)/sigma^2), df = n - 1),
 add = TRUE, col="red", lwd=2, main="N(0,1)")
 
@@ -75,33 +87,39 @@ sigma**2
 #is sb2 correct?
 mean(statistics[,2])
 sigma**2
-```
 
-```{r basic 1.3, echo=TRUE, fig.height = 10, fig.width = 10}
-hist(statistics[,2], breaks=20, col=rgb(1,0,0,1/6),
-     main=expression(paste("Biasness of ",s[b]^2)), 
-     xlab="Variance", xlim= c(0, 40), cex.main=1.5, cex.lab=1.2,probability=TRUE)
-hist(statistics[,1],breaks=20,add=TRUE,col=rgb(0,0,1,1/6), probability=TRUE) 
+#plot s2 observed, sb2 observed and true value
+{
+hist(statistics[,2],breaks=20,col=rgb(1,0,0,1/6),main="Biasness of sb2",xlab="Variance")  
+hist(statistics[,1],breaks=20,add=TRUE,col=rgb(0,0,1,1/6))                    
 abline(v=sigma**2,lwd=3)  
 abline(v=mean(statistics[,1]),col=4,lty=2,lwd=3)
 abline(v=mean(statistics[,2]),col=2,lty=2,lwd=3)
-legend("topright", legend=c(paste("True variance = ",sigma**2), 
-bquote(paste(bar(s[b])^2, " = ", .(round(mean(statistics[,2]),3)))),
-bquote(paste(bar(s)^2, " = ",.(round(mean(statistics[,1]),3)))),
-expression(s[b]^2),expression(s^2)),col=c("black","red","blue",rgb(1,0,0,1/6),
-col=rgb(0,0,1,1/6)), lty=c(1,6,6,2,2),lwd=c(2,2,2,14,14), cex=1.2)
+legend("topright", legend=c(paste("true variance: ",sigma**2), paste("Sb2 mean: ",round(mean(statistics[,2]),3)),paste("S2 mean",round(mean(statistics[,1]),3)),"Sb2","S2"),col=c("black", "red","blue",rgb(1,0,0,1/6),col=rgb(0,0,1,1/6)), lty=c(1,1,1,2,2),lwd=c(2,2,2,14,14), cex=0.8)
+}
+
 ```
 
-Here We've plotted the sample distribution of $s_b^2$ and $s^2$. The black line indicates the true value of the variance. The blue dashed line is the mean of $s^2$ while the red dashed line is the mean of $s_b^2$. I can see that $s_b^2$ is a biased estimator of the variance, indeed it underestimates the true variance $\sigma^2$.
+Here We've plotted the sample distribution of Sb2 and S2. The black line indicates the true value of the variance. The blue dashed line is the mean of $s^2$ while the red dashed line is the mean of $s_b^2$. I can see that $s_b^2$ is a biased estimator of the variance, indeed it underestimates the true variance $\sigma^2$.
 
 
 
 ### Exercise 2
 
 What happens if a great player decides to join you, now? Try to simulate the data and perform the test again.
-Assuming he is a great player means that his shots along the game will hit the highest points with great probability and the lowest point with low probability.
 
-*Solution :*
+
+By assuming he is a great player, and that his shots along the game will hit the highest points with great probability and the lowest point with low probability. We assign the following hitting probabilities:
+
+-Zone 1 (from 1 to 3 points): p1=1/16;
+
+-Zone 2 (from 4 to 6 points); p2=3/16;
+
+-Zone 3 (from 7 to 9 points); p3=5/16;
+
+-Zone 4 (the highest points in the middle of the target, say 10, 25, 50 points): p4=7/16;
+
+*solution :*
 
 For the first simulation 7 seven players have been considered, 6 with the same probability distribution $p_1=7/16$, $p_2=5/16$, $p_3=3/16$, $p_4=1/16$ and the seventh, greater, player with distribution $p_1=1/16$, $p_2=3/16$, $p_3=5/16$, $p_4=7/16$.
 For the hypothesis tests a $\alpha=0.05$ significance level has been fixed.
@@ -131,7 +149,7 @@ pchisq(x2_gp, df =(K-1)*(M-1), lower.tail =FALSE )
 ```
 
 Adding to the simulation the great player the test statistic estimated shows a strong evidence (p-value<<0.001) against the $H_0$ null hypothesis of homogeneity among the players, i.e. the great player is much more stronger than other players.
-\newline
+\\
 The second simulation instead of assuming the same distribution for all the initial sixth players, it is randomly uniformly sampled from the vector $(7/16, 5/16, 3/16, 1/16)$.
 
 ```{r basic 4, echo=TRUE}
@@ -158,52 +176,70 @@ Since what has been seen before the test carried out on the first 6 players with
 
 ### Exercise 3
 
-In order to test whether the number of followers on Twitter and Instagram of some accounts are linearly correlated a hypothesis test has been carried out, fixing $\alpha=0.05$ as significance level.
-Also To perform this test the Pearson correlation coefficient has been used.
-The $H_0$ null hypothesis assumes $\rho=0$.
+Are the Instagram and Twitter account somehow associated? Perform a correlation test, compute the p-value and give an answer. Here is the dataframe.
 
-*Solution :*
-
-```{r basic 6, echo=TRUE, warning=FALSE}
+```{r basic 6, echo=TRUE}
 
 Owners <- c( "Katy Perry", "Justin Bieber", "Taylor Swift", "Cristiano Ronaldo",
                    "Kim Kardashian", "Ariana Grande", "Selena Gomez", "Demi Lovato")
 Instagram <- c( 69, 98,107, 123, 110, 118, 135, 67)
 Twitter <- c( 109, 106, 86, 72, 59, 57, 56, 56)
-plot( Instagram, Twitter, pch=21, bg=2, xlim=c(60, 150), ylim=c(40, 120), cex.lab=1.2)
-title("Number of followers scatterplot", cex.main = 1.5)
-text( Instagram[-6], Twitter[-6]+5, Owners[-6], cex=1.2 )
-text( Instagram[6], Twitter[6]-5, Owners[6], cex=1.2 )
+plot( Instagram, Twitter, pch=21, bg=2, xlim=c(60, 150), ylim=c(40, 120) )
+text( Instagram[-6], Twitter[-6]+5, Owners[-6], cex=0.8 )
+text( Instagram[6], Twitter[6]-5, Owners[6], cex=0.8 )
 
+      
+```
+
+*solution :*
+
+
+```{r basic 7, echo=TRUE}
+
+library(RColorBrewer)
+
+Instagram <- c( 69, 98,107, 123, 110, 118, 135, 67)
+Twitter <- c( 109, 106, 86, 72, 59, 57, 56, 56)
 
 n=length(Instagram)
 r=cor(Instagram,Twitter)
+r
 t_obs=r*sqrt((n-2)/(1-r^2))
 
 x <- seq(-5,5,length=1000)
-plot(x,dt(x,n-2),type="l",xlab="t",ylab="Density",main="t - test", cex.main=1.5, cex.lab=1.2)
+{
+plot(x,dt(x,n-2),type="l",xlab="T",ylab="density",main="t - test")
 abline(v=t_obs,col=2,lwd=3)
 
+
+#I fix alpha=0.05 and plot rejection and acceptance region
 alpha <- 0.05
 r1 <- qt(alpha/2,n-2)
 r2 <- qt(1-alpha/2,n-2)
 abline(v=r1,lty=2,lwd=2)
 abline(v=r2,lty=2,lwd=2)
-text (0,0.2, paste("Accept", expression(H0)))
-text(-4,0.05,paste("Reject",expression(H0)))
-text(4,0.05,paste("Reject",expression(H0)))
-legend("topright", legend=c("t observed", "Acceptance region boundaries"),col=c("red","black"),lty=c(1,2),lwd=2, cex=1.2)
+text (0,0.2, paste("Accept", expression(H_0)))
+text(-4,0.05,paste("Reject",expression(H_0)))
+text(4,0.05,paste("Reject",expression(H_0)))
+legend("topright", legend=c("T_observed", "acceptance region boundaries"),col=c("red","black"),lty=c(1,2),lwd=2, cex=0.8)
+
+
+alpha <- 0.05
 q_inf_95 <- qt(alpha/2, df=n-2)
 q_sup_95 <- qt(1-alpha/2, df=n-2)
 cord.x <- c(q_inf_95,seq(q_inf_95,q_sup_95,0.01),q_sup_95)
 cord.y <- c(0,dt(seq(q_inf_95,q_sup_95,0.01),n-2),0)
 polygon(cord.x,cord.y,col=rgb(1,0,0,1/10), border = NA )
+}
+ 
 ```
 
-Looking at the plot we can see that we should accept the null hypotesis $H_0: \rho=0$.
+Looking at the plot we can see that we should accept the null hypotesis $H_0: \rho=0$. We can also compute the p-value using as alternative hypotesis the two sided one: $H1: \rho \ne0$
 
 ```{r basic 8, echo=TRUE}
-2*(1-pt(abs(t_obs),n-2))
+#compute the p-value
+p=2*(1-pt(abs(t_obs),n-2))
+p
 ```
 
 Since the p-value is higher than the significance level (0.05), $H_0$ is not rejected so the numbers of followers on Instagram of a person is not linearly correlated with his the number of followers on Twitter.
@@ -221,14 +257,13 @@ Even in this case the p-value is higher than the significance level. This is an 
 
 ### Exercise 4
 
-Compute analitically $J(\gamma,\gamma;y)$, $J(\gamma,\beta;y)$, $J(\beta,\beta;y)$.
+Compute analitically $ J(\gamma,\gamma;y),J(\gamma,\beta;y),J(\beta,\beta;y)$.
 
-\newline 
-*Solution :*
+*solution :*
 
 Log-likelihood function
 $$ 
-l(\gamma, \beta; y) = nlog(\gamma)-n\log(\beta)+\gamma\sum_{i=1}^{n}{\log(y_i)}-\sum_{i=1}^{n}{\frac{y_i}{\beta}}
+l(\alpha, \beta; y) = nlog(\gamma)-n\log(\beta)+\gamma\sum_{i=1}^{n}{\log(y_i)}-\sum_{i=1}^{n}{\frac{y_i}{\beta}}
 $$
 
 First derivatives of log-likelihood function
@@ -267,88 +302,74 @@ Second derivatives of log-likelihood function
 
 ### Exercise 5 
 
-The following quadratic formula of the log-likelihood, based on the Taylor series:
+Produce the contour plot for the **quadratic approximation** of the log-likelihood, based on the Taylor series:
 
-$$ l(\theta)-l(\hat{\theta}) \approx -\frac{1}{2}(\theta-\hat{\theta})^TJ(\hat{\theta})(\theta-\hat{\theta}) $$
-allows to approximate the log-likelihood. In order to evaluate this approximation the contour plots of the log-likelihood and its estimation have been produced. 
+$l(\theta)−l(\hat\theta) \approx −\frac{1}{2}(\theta−\hat\theta)^T J(\hat\theta)(\theta−\hat\theta)$.
 
-*Solution :*
+
+*solution :*
 
 
 ```{r basic 10, echo=TRUE}
 y <- c(155.9, 200.2, 143.8, 150.1,152.1, 142.2, 147, 146, 146,
-       170.3, 148, 140, 118, 144, 97)
+ 170.3, 148, 140, 118, 144, 97)
+
 n <- length(y)
+
+#define parameters grid
 gamma <- seq(0.1, 15, length=100)
 beta <- seq(100,200, length=100)
 
+parvalues <- expand.grid(gamma,beta)
+
 gammahat<-uniroot(function(x) n/x+sum(log(y))-n*
-                    sum(y^x*log(y))/sum(y^x),
-                  c(1e-5,15))$root
+sum(y^x*log(y))/sum(y^x),
+c(1e-5,15))$root
 betahat<- mean(y^gammahat)^(1/gammahat)
+weib.y.mle<-c(gammahat,betahat)
 
-
+#observed information matrix
 jhat<-matrix(NA,nrow=2,ncol=2)
 jhat[1,1]<-n/gammahat^2+sum((y/betahat)^gammahat*
-                              (log(y/betahat))^2)
+(log(y/betahat))^2)
 jhat[1,2]<-jhat[2,1]<- n/betahat-sum(y^gammahat/betahat^(gammahat+1)*
-                                       (gammahat*log(y/betahat)+1))
+(gammahat*log(y/betahat)+1))
 jhat[2,2]<- -n*gammahat/betahat^2+gammahat*(gammahat+1)/
-  betahat^(gammahat+2)*sum(y^gammahat)
+betahat^(gammahat+2)*sum(y^gammahat)
 
-log_lik_est_weibull <- function(param){
-  -1/2*c(param[1]-gammahat, param[2]-betahat) %*% jhat %*% c(param[1]-gammahat, 
-                                                             param[2]-betahat)
+approx <- function(theta){
+ return(-0.5*(theta - weib.y.mle) %*% jhat %*% (theta - weib.y.mle))
 }
 
-parvalues <- expand.grid(gamma,beta)
-log_lik_est_weibull_values <- apply(parvalues, 1, log_lik_est_weibull)
-log_lik_est_weibull_values <- matrix(log_lik_est_weibull_values, nrow=length(gamma), 
-                                     ncol=length(beta), byrow=F)
-
-log_lik_weibull <- function( data, param){
-  -sum(dweibull(data, shape = param[1], scale = param[2], log = TRUE))}
-parvalue <- expand.grid(gamma,beta)
-llikvalues <- apply(parvalue, 1, log_lik_weibull, data=y)
-llikvalues <- matrix(-llikvalues, nrow=length(gamma), ncol=length(beta),
-byrow=F)
-
+appx <- apply(parvalues, 1, approx)
+appx <- matrix(appx, nrow=length(gamma), ncol=length(beta),byrow=F)
 conf.levels <- c(0,0.5,0.75,0.9,0.95,0.99)
-par(mfrow=c(1,2), oma=c(0,0,0,0))
-contour(gamma, beta, log_lik_est_weibull_values,
-        levels=-qchisq(conf.levels, 2)/2,
-        xlab=expression(gamma),
-        labels=as.character(conf.levels),
-        ylab=expression(beta), cex.lab=1.2)
-title('Approximated log-likelihood',cex.main=1.5)
 
-contour(gamma, beta, llikvalues-max(llikvalues),
+par (mfrow=c(1,2), oma=c(0,0,0,0))
+#contour plot
+contour(gamma, beta, appx,
 levels=-qchisq(conf.levels, 2)/2,
 xlab=expression(gamma),
 labels=as.character(conf.levels),
-ylab=expression(beta), cex.lab=1.2)
-title('Original log-likelihood', cex.main=1.5)
-```
-The two contour plots are quite similar, this similarity can be even more appreciated considering that the approximation just needed to compute and evaluate the observed matrix (so the second partial derivates) on the MLE estimators $\theta=(\gamma,\beta)$.
-\newline The contrast is mainly due to the difference between the original values and the approximated log-likelihood.
+ylab=expression(beta))
+title('Weilbull relative log likelihood')
 
-```{r basic 10.5, echo=TRUE}
-par(mfrow=c(1,2), oma=c(0,0,0,0))
-
-image(gamma,beta,log_lik_est_weibull_values,zlim=c(-6,0),
+#image
+image(gamma,beta,appx,zlim=c(-6,0),
 col=terrain.colors(20),xlab=expression(gamma),
-ylab=expression(beta), cex.lab=1.2)
-title('Approximated log-likelihood', cex.main=1.5)
-
-image(gamma,beta,llikvalues-max(llikvalues),zlim=c(-6,0),
-col=terrain.colors(20),xlab=expression(gamma),
-ylab=expression(beta), cex.lab=1.2)
-title('Original log-likelihood', cex.main=1.5)
+ylab=expression(beta))
+title('Weibull relative log likelihood')
+      
 ```
 
-These two charts are very usefull, since by focusing on colours you can appreciate that the shapes of the two distributions are almost the same.
 
-## Core Statistics {.tabset}
+The two contour plots are quite similar, this similarity can be even more appreciated considering that the estimation just needed to compute and evaluate the observed matrix (so the second partial derivates) on the MLE estimators $\theta=(\gamma,\beta)$.
+
+
+
+
+
+## Core Statistics
 
 ### Exercise 3.3
 
@@ -366,7 +387,7 @@ for (i in 1:n) {
 ```
 Confirm that your rewrite is faster but gives the same result.
 
-*Solution :* 
+*solution :* 
 
 ```{r basic 12, echo=TRUE}
 set.seed(101)
@@ -407,12 +428,12 @@ summary(zneg2)
 Removing the for loop we can see that the elapsed time decrease of one order of magnitude.
 
 ### Exercise 3.5
-Consider solving the matrix equation $A\text{x} = y$ for $\text{x}$, where $y$ is a known $n$ vector and $A$ is a known $n\times n$ matrix. The formal solution to the problem is $\text{x} = A^{-1}y$, but it is possible to solve the equation directly, without actually forming $A^{-1}$. This question explores this direct solution. Read the help file for $solve$ before trying it.
+Consider solving the matrix equation $Ax = y$ for $x$, where $y$ is a known n vector and $A$ is a known $n×n$ matrix. The formal solution to the problem is $x = A^{−1}y$, but it is possible to solve the equation directly, without actually forming $A^{−1}$. This question explores this direct solution. Read the help file for $solve$ before trying it.
 
 
-a. First create an $A$, $\text{x}$ and $y$ satisfying $A\text{x} = y$.
+a. First create an $A$, $x$ and $y$ satisfying $Ax = y$.
 
-*Solution :*
+*solution :*
 ```{r basic 13, echo=TRUE}
 set.seed(0); 
 n <- 1000
@@ -421,13 +442,13 @@ x.true <- runif(n)
 y <- A%*%x.true
 
 ```
-The idea is to experiment with solving $A\text{x} = y$ for $\text{x}$, but with a known truth to compare the answer to.
+The idea is to experiment with solving $Ax = y$ for $x$, but with a known truth to compare the answer to.
 
 
 
-b. Using solve, form the matrix $A^{-1}$ explicitly and then form $\text{x}_1 = A^{-1}y$. Note how long this takes. Also assess the mean absolute difference between $x_1$ and $\text{x.true}$ (the approximate mean absolute error in the solution).
+b. Using solve, form the matrix $A^{−1}$ explicitly and then form $x_1 = A^{−1}y$. Note how long this takes. Also assess the mean absolute difference between $x1$ and $x.true$ (the approximate mean absolute ‘error’ in the solution).
 
-*Solution :*
+*solution :*
 
 ```{r basic 14, echo=TRUE}
 start1 <- Sys.time()
@@ -442,7 +463,7 @@ mean_abs1 <- mean(abs(x1 - x.true))
 mean_abs1
 ```
 
-c. Now use solve to directly solve for $\text{x}$ without forming $A^{-1}$. Note how long this takes and assess the mean absolute error of the result.
+c. Now use solve to directly solve for $x$ without forming $A^{−1}$. Note how long this takes and assess the mean absolute error of the result.
 
 *solution :*
 
@@ -463,12 +484,12 @@ mean_abs2
 d. What do you conclude?
 
 
-*Solution :*
+*solution :*
 
 Build-in function solve is faster than other methods. MAD results are same for all calculations.
 
 
-## Data Analysis and Graphics Using R {.tabset}
+## Data Analysis and Graphics Using R
 
 ### CH3.Exercise 11
 The following data represent the total number of aberrant crypt foci (abnormal growths in the colon) observed in seven rats that had been administered a single dose of the carcinogen azoxymethane and sacrificed after six weeks (thanks to RanjanaBird, Faculty of Human Ecology, University of Manitoba for the use of these data):
@@ -477,7 +498,8 @@ Enter these data and compute their sample mean and variance. Is the Poisson mode
 x <- rpois(7, 78.3)
 mean(x); var(x)
 
-*Solution :*
+*solution :*
+
 In order to check the poisson assumption on these data first of all I generate many a sample from a $Poisson(78.3)$ and then I compute the sample mean and the sample variance on all of them.
 
 ```{r basic 16, echo=TRUE}
@@ -542,9 +564,9 @@ It can be shown, using linear algebra, that in the long run this Markov chain wi
 
 A result called the ergodic theorem allows us to estimate this distribution by simulating the Markov chain for a long enough time.
 
-a. Simulate 1000 values, and calculate the proportion of times the chain visits each of the states. Compare the proportions given by the simulation with the above theoretical proportions.
+(a) Simulate 1000 values, and calculate the proportion of times the chain visits each of the states. Compare the proportions given by the simulation with the above theoretical proportions.
 
-*Solution :*
+*solution :*
 
 ```{r basic 17, echo=TRUE}
 set.seed(0);
@@ -573,7 +595,7 @@ print(results/1000)
 ```
 
 
-b. Here is code that calculates rolling averages of the proportions over a number of simulations and plots the result. It uses the function rollmean() from the zoo package.
+(b) Here is code that calculates rolling averages of the proportions over a number of simulations and plots the result. It uses the function rollmean() from the zoo package.
 Try varying the number of simulations and the width of the window. How wide a window is needed to get a good sense of the stationary distribution? This series settles down rather quickly to its stationary distribution (it “burns in” quite quickly). A reasonable width of window is, however, needed to give an accurate indication of the stationary distribution.
 
 
@@ -636,10 +658,9 @@ In the plots of the autocorrelation function for Series y1 instead we can see th
 Create a function that does the calculations in the first two lines of the previous exercise.
 Put the calculation in a loop that repeats 25 times. Calculate the mean and variance for each vector y that is returned. Store the 25 means in the vector av, and store the 25 variances in the vector v. Calculate the variance of av.
 
-
 *solution :*
 
-We've written a function which generates n values of the series y
+I've written a function which generates n values of the series y
 ```{r basic 21, echo=TRUE}
 set.seed(101)
 auto_cor <- function(n=51){
@@ -648,7 +669,7 @@ auto_cor <- function(n=51){
   y
 }
 ```
-Now We call this function 25 times and a We store in 2 arrays the sample mean and the sample variance of the generated serie:
+Now I call this function 25 times and a I store in 2 arrays the sample mean and the sample variance of the generated serie:
 
 ```{r basic 23, echo=TRUE}
 av <- numeric(25)
@@ -660,15 +681,11 @@ for (j in 1:25){
   v[j] <- var(y)
 }
 ```
-Now We can print the variance of the sample mean. From theoretical results I know that the variance of the sample mean is $\frac{\sigma}{n}$. We can check if this result holds using as estimate of $\sigma$ the mean of the collected sample variances (which is  an unbiased estimator). We can see that the theoretical result holds.
+Now I can print the variance of the sample mean. From theoretical results I know that the variance of the sample mean is $\frac{\sigma}{n}$. I can check if this result holds using as estimate of $\sigma$ the mean of the collected sample variances (which is  an unbiased estimator). I can see that the theoretical result holds.
 ```{r basic 24, echo=TRUE}
 print(paste("variance of the sample mean: ",var(av)))
 print(paste("sample variance / n: ", mean(v)/25))
 ```
-
-
-
-
 
 
 
