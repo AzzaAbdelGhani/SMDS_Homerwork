@@ -631,7 +631,7 @@ library(lattice)
 plotmarkov <- function(n=10000, start=0, window=100, transition=Pb, npanels=5){
       xc2 <- Markov(n, start, transition)
       mav0 <- rollmean(as.integer(xc2==0), window)
-      mav1 <- rollmean(as.integer(xc2==0), window)
+      mav1 <- rollmean(as.integer(xc2==1), window)
       npanel <- cut(1:length(mav0), breaks=seq(from=1, to=length(mav0),
       length=npanels+1), include.lowest=TRUE)
       df <- data.frame(av0=mav0, av1=mav1, x=1:length(mav0),
